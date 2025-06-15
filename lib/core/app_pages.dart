@@ -1,7 +1,11 @@
 import 'package:geottandance/bindings/login_binding.dart';
+import 'package:geottandance/bindings/register_binding.dart';
+import 'package:geottandance/bindings/forgot_password_binding.dart';
 import 'package:geottandance/controllers/splash_controller.dart';
 import 'package:geottandance/core/app_routes.dart';
 import 'package:geottandance/pages/auth/login_screen.dart';
+import 'package:geottandance/pages/auth/register_screen.dart';
+import 'package:geottandance/pages/auth/forgot_password_screen.dart';
 import 'package:geottandance/pages/splash/splashscreen.dart';
 import 'package:get/get.dart';
 
@@ -22,8 +26,20 @@ class AppPages {
     // ),
     GetPage(
       name: AppRoutes.login,
-      page: () => const LoginScreen(),
+      page: () => LoginScreen(),
       binding: LoginBinding(),
+    ),
+
+    GetPage(
+      name: AppRoutes.register,
+      page: () => const RegisterScreen(),
+      binding: RegisterBinding(),
+    ),
+
+    GetPage(
+      name: AppRoutes.forgotPassword,
+      page: () => const ForgotPasswordScreen(),
+      binding: ForgotPasswordBinding(),
     ),
     // GetPage(
     //   name: AppRoutes.home,

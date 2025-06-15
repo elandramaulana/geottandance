@@ -14,18 +14,18 @@ class LoginController extends GetxController {
     final email = emailController.text.trim();
     final password = passwordController.text;
     if (email.isEmpty || password.isEmpty) {
-      Get.snackbar('Error', 'Email dan Password tidak boleh kosong');
+      Get.snackbar('Error', 'Email and Password cannot be empty');
       return;
     }
 
     isLoading(true);
     error.value = null;
     try {
-      Get.snackbar('Success', 'Login berhasil');
+      Get.snackbar('Success', 'Login successful');
       Get.toNamed(AppRoutes.bottomNav);
     } catch (e) {
       error(e.toString());
-      Get.snackbar('Error', error.value ?? 'Login gagal');
+      Get.snackbar('Error', error.value ?? 'Login failed');
     } finally {
       isLoading(false);
     }
@@ -33,6 +33,6 @@ class LoginController extends GetxController {
 
   void logout() async {
     // await _authService.logout();
-    Get.snackbar('Success', 'Logout berhasil');
+    Get.snackbar('Success', 'Logout successful');
   }
 }

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:geottandance/controllers/login_controller.dart';
 import 'package:get/get.dart';
+import 'package:geottandance/controllers/forgot_password_controller.dart';
 
-class LoginScreen extends GetView<LoginController> {
-  const LoginScreen({super.key});
+class ForgotPasswordScreen extends GetView<ForgotPasswordController> {
+  const ForgotPasswordScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -47,10 +47,9 @@ class LoginScreen extends GetView<LoginController> {
                   padding: EdgeInsets.all(25.w),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Text(
-                        'Halo!',
+                        'Forgot Password?',
                         style: TextStyle(
                           fontSize: 26.sp,
                           fontWeight: FontWeight.bold,
@@ -58,89 +57,38 @@ class LoginScreen extends GetView<LoginController> {
                         ),
                       ),
                       SizedBox(height: 10.h),
-                      Text(
-                        textAlign: TextAlign.center,
-                        'Please login to continue',
-                        style: TextStyle(fontSize: 16.sp, color: Colors.grey),
-                      ),
-                      SizedBox(height: 30.h),
                       TextField(
                         controller: controller.emailController,
                         decoration: _inputDecoration('Email', Icons.email),
-                      ),
-                      SizedBox(height: 20.h),
-                      TextField(
-                        controller: controller.passwordController,
-                        obscureText: true,
-                        decoration: _inputDecoration('Password', Icons.lock),
+                        keyboardType: TextInputType.emailAddress,
                       ),
                       SizedBox(height: 30.h),
-                      Obx(() {
-                        return SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
+                      SizedBox(
+                        width: double.infinity,
+                        child: Obx(
+                          () => ElevatedButton(
                             onPressed: controller.isLoading.value
                                 ? null
                                 : () {
-                                    controller.login();
+                                    controller.resetPassword();
                                   },
                             style: _buttonStyle(),
                             child: controller.isLoading.value
                                 ? SizedBox(
-                                    width: 24.w,
-                                    height: 24.w,
+                                    width: 20.w,
+                                    height: 20.w,
                                     child: const CircularProgressIndicator(
                                       strokeWidth: 2,
                                       color: Colors.white,
                                     ),
                                   )
                                 : Text(
-                                    'Login',
+                                    'Send Verification Email',
                                     style: TextStyle(
                                       fontSize: 18.sp,
                                       color: Colors.white,
                                     ),
                                   ),
-                          ),
-                        );
-                      }),
-                      SizedBox(height: 15.h),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            'Don\'t have an account? ',
-                            style: TextStyle(
-                              fontSize: 14.sp,
-                              color: Colors.grey.shade700,
-                            ),
-                          ),
-                          GestureDetector(
-                            onTap: () {
-                              Get.toNamed('/register');
-                            },
-                            child: Text(
-                              'Register',
-                              style: TextStyle(
-                                fontSize: 14.sp,
-                                color: Colors.blueGrey,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 10.h),
-                      GestureDetector(
-                        onTap: () {
-                          Get.toNamed('/forgotPassword');
-                        },
-                        child: Text(
-                          'Forgot Password?',
-                          style: TextStyle(
-                            fontSize: 14.sp,
-                            color: Colors.blueGrey,
-                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
