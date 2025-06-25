@@ -46,17 +46,4 @@ class RegisterController extends GetxController {
       isLoading(false);
     }
   }
-
-  void _showDialog(String title, String message, {VoidCallback? onOk}) {
-    Get.defaultDialog(
-      title: title,
-      middleText: message,
-      textConfirm: 'OK',
-      confirmTextColor: Colors.white,
-      onConfirm: () {
-        Get.back(); // tutup dialog
-        if (onOk != null) onOk();
-      },
-    );
-  }
 }
