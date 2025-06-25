@@ -1,18 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:geottandance/controllers/register_controller.dart';
-import 'package:geottandance/core/app_routes.dart';
+import 'package:geottandance/controllers/forgot_password_controller.dart';
 
-class RegisterScreen extends GetView<RegisterController> {
-  const RegisterScreen({super.key});
+class ForgotPasswordScreen extends GetView<ForgotPasswordController> {
+  const ForgotPasswordScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(
         children: [
-          // Background gradient
           Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
@@ -22,8 +20,6 @@ class RegisterScreen extends GetView<RegisterController> {
               ),
             ),
           ),
-
-          // Decorative circles
           Positioned(
             top: -50,
             left: -50,
@@ -39,8 +35,6 @@ class RegisterScreen extends GetView<RegisterController> {
             left: 50,
             child: _circle(100.w, 100.h, Colors.green.shade100),
           ),
-
-          // Register Form
           Center(
             child: SingleChildScrollView(
               child: Card(
@@ -55,7 +49,7 @@ class RegisterScreen extends GetView<RegisterController> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        'Register',
+                        'Forgot Password?',
                         style: TextStyle(
                           fontSize: 26.sp,
                           fontWeight: FontWeight.bold,
@@ -63,34 +57,12 @@ class RegisterScreen extends GetView<RegisterController> {
                         ),
                       ),
                       SizedBox(height: 10.h),
-
-                      // Email
                       TextField(
                         controller: controller.emailController,
                         decoration: _inputDecoration('Email', Icons.email),
-                      ),
-                      SizedBox(height: 20.h),
-
-                      // Password
-                      TextField(
-                        controller: controller.passwordController,
-                        decoration: _inputDecoration('Password', Icons.lock),
-                        obscureText: true,
-                      ),
-                      SizedBox(height: 20.h),
-
-                      // Confirm Password
-                      TextField(
-                        controller: controller.confirmPasswordController,
-                        decoration: _inputDecoration(
-                          'Confirm Password',
-                          Icons.lock,
-                        ),
-                        obscureText: true,
+                        keyboardType: TextInputType.emailAddress,
                       ),
                       SizedBox(height: 30.h),
-
-                      // Register Button
                       SizedBox(
                         width: double.infinity,
                         child: Obx(
@@ -98,7 +70,7 @@ class RegisterScreen extends GetView<RegisterController> {
                             onPressed: controller.isLoading.value
                                 ? null
                                 : () {
-                                    controller.register();
+                                    controller.resetPassword();
                                   },
                             style: _buttonStyle(),
                             child: controller.isLoading.value
@@ -111,37 +83,12 @@ class RegisterScreen extends GetView<RegisterController> {
                                     ),
                                   )
                                 : Text(
-                                    'Register',
+                                    'Send Verification Email',
                                     style: TextStyle(
                                       fontSize: 18.sp,
                                       color: Colors.white,
                                     ),
                                   ),
-                          ),
-                        ),
-                      ),
-                      SizedBox(height: 15.h),
-
-                      // TextButton Login
-                      TextButton(
-                        onPressed: () => Get.offAllNamed(AppRoutes.login),
-                        child: RichText(
-                          text: TextSpan(
-                            text: 'Already have an account? ',
-                            style: TextStyle(
-                              fontSize: 14.sp,
-                              color: Colors.grey.shade700,
-                            ),
-                            children: [
-                              TextSpan(
-                                text: 'Login',
-                                style: TextStyle(
-                                  fontSize: 14.sp,
-                                  color: Colors.blueGrey,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
                           ),
                         ),
                       ),

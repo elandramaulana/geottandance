@@ -434,4 +434,36 @@ class _PulsingLoadingIndicatorState extends State<_PulsingLoadingIndicator>
       ),
     );
   }
+
+  InputDecoration _inputDecoration(String label, IconData icon) {
+    return InputDecoration(
+      labelText: label,
+      prefixIcon: Icon(icon, color: Colors.blueGrey),
+      filled: true,
+      fillColor: Colors.white,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12.r),
+        borderSide: BorderSide.none,
+      ),
+    );
+  }
+
+  Widget _circle(double w, double h, Color color) {
+    return Container(
+      width: w,
+      height: h,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: color.withOpacity(0.3),
+      ),
+    );
+  }
+
+  ButtonStyle _buttonStyle() {
+    return ElevatedButton.styleFrom(
+      padding: EdgeInsets.symmetric(vertical: 15.h),
+      backgroundColor: Colors.blueGrey,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+    );
+  }
 }

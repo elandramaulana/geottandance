@@ -26,9 +26,26 @@ class AppPages {
     ),
     GetPage(
       name: AppRoutes.login,
-      page: () => const LoginScreen(),
+      page: () => LoginScreen(),
       binding: LoginBinding(),
     ),
+
+    GetPage(
+      name: AppRoutes.register,
+      page: () => const RegisterScreen(),
+      binding: RegisterBinding(),
+    ),
+
+    GetPage(
+      name: AppRoutes.forgotPassword,
+      page: () => const ForgotPasswordScreen(),
+      binding: ForgotPasswordBinding(),
+    ),
+    // GetPage(
+    //   name: AppRoutes.home,
+    //   page: () => const HomeScreen(),
+    //   binding: HomeBinding(),
+    // ),
     GetPage(
       name: AppRoutes.home,
       page: () => const HomeScreen(),
