@@ -1,7 +1,11 @@
+import 'package:geottandance/bindings/home_binding.dart';
 import 'package:geottandance/bindings/login_binding.dart';
+import 'package:geottandance/bindings/navbar_binding.dart';
 import 'package:geottandance/controllers/splash_controller.dart';
 import 'package:geottandance/core/app_routes.dart';
 import 'package:geottandance/pages/auth/login_screen.dart';
+import 'package:geottandance/pages/home/home_screen.dart';
+import 'package:geottandance/pages/navigation/main_navbar.dart';
 import 'package:geottandance/pages/splash/splashscreen.dart';
 import 'package:get/get.dart';
 
@@ -15,21 +19,21 @@ class AppPages {
         Get.put(SplashScreenController());
       }),
     ),
-    // GetPage(
-    //   name: AppRoutes.bottomNav,
-    //   page: () => const BottomNavWidget(),
-    //   binding: BottomNavBinding(), // Gunakan binding bottom navbar
-    // ),
+    GetPage(
+      name: AppRoutes.bottomNav,
+      page: () => const MainNavigationPage(),
+      binding: NavigationBinding(),
+    ),
     GetPage(
       name: AppRoutes.login,
       page: () => const LoginScreen(),
       binding: LoginBinding(),
     ),
-    // GetPage(
-    //   name: AppRoutes.home,
-    //   page: () => const HomeScreen(),
-    //   binding: HomeBinding(),
-    // ),
+    GetPage(
+      name: AppRoutes.home,
+      page: () => const HomeScreen(),
+      binding: HomeBinding(),
+    ),
     // GetPage(
     //   name: AppRoutes.history,
     //   page: () => const HistoryPage(),

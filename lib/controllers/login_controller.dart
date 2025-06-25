@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:geottandance/core/app_routes.dart';
+import 'package:geottandance/utils/snackbar_util.dart';
 import 'package:get/get.dart';
 
 class LoginController extends GetxController {
@@ -14,18 +15,18 @@ class LoginController extends GetxController {
     final email = emailController.text.trim();
     final password = passwordController.text;
     if (email.isEmpty || password.isEmpty) {
-      Get.snackbar('Error', 'Email dan Password tidak boleh kosong');
+      SnackbarUtil.showError('Email and Password cannot be empty');
       return;
     }
 
     isLoading(true);
     error.value = null;
     try {
-      Get.snackbar('Success', 'Login berhasil');
+      SnackbarUtil.showSuccess('Login successful');
       Get.toNamed(AppRoutes.bottomNav);
     } catch (e) {
       error(e.toString());
-      Get.snackbar('Error', error.value ?? 'Login gagal');
+      SnackbarUtil.showError('Login failed');
     } finally {
       isLoading(false);
     }
@@ -33,6 +34,6 @@ class LoginController extends GetxController {
 
   void logout() async {
     // await _authService.logout();
-    Get.snackbar('Success', 'Logout berhasil');
+    SnackbarUtil.showSuccess('Logout successful');
   }
 }
