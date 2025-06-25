@@ -17,9 +17,9 @@ class SplashScreen extends GetView<SplashScreenController> {
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    Color(0xFFFFF8F5),
-                    Color(0xFFE8F4FD),
-                    Color(0xFFF0F8FF),
+                    Color(0xFFFFFBF0), // Warm cream
+                    Color(0xFFF5F2E8), // Light yellow cream
+                    Color(0xFFE8E5D6), // Pale yellow
                   ],
                   stops: [0.0, 0.5, 1.0],
                   begin: Alignment.topLeft,
@@ -32,40 +32,40 @@ class SplashScreen extends GetView<SplashScreenController> {
               top: -80,
               left: -60,
               size: 220,
-              color: Colors.pink.shade100,
-              opacity: 0.25,
+              color: const Color(0xFF1C5B41), // Deep forest green
+              opacity: 0.3,
               duration: 4000,
             ),
             _buildFloatingCircle(
               top: 100,
               right: -40,
               size: 160,
-              color: Colors.purple.shade100,
-              opacity: 0.2,
+              color: const Color(0xFFCCAC6B), // Golden yellow
+              opacity: 0.25,
               duration: 3500,
             ),
             _buildFloatingCircle(
               bottom: -40,
               right: -40,
               size: 180,
-              color: Colors.blue.shade100,
-              opacity: 0.3,
+              color: const Color(0xFF1C5B41), // Deep forest green
+              opacity: 0.35,
               duration: 5000,
             ),
             _buildFloatingCircle(
               bottom: 80,
               left: 30,
               size: 120,
-              color: Colors.green.shade100,
-              opacity: 0.25,
+              color: const Color(0xFFCCAC6B), // Golden yellow
+              opacity: 0.3,
               duration: 4500,
             ),
             _buildFloatingCircle(
               top: 200,
               left: 20,
               size: 90,
-              color: Colors.orange.shade100,
-              opacity: 0.2,
+              color: const Color(0xFF1C5B41), // Deep forest green
+              opacity: 0.25,
               duration: 3000,
             ),
 
@@ -85,7 +85,7 @@ class SplashScreen extends GetView<SplashScreenController> {
                         child: Container(
                           padding: EdgeInsets.all(20.w),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: const Color(0xFFFFFEF7), // Cream white
                             shape: BoxShape.circle,
                             boxShadow: [
                               BoxShadow(
@@ -95,7 +95,9 @@ class SplashScreen extends GetView<SplashScreenController> {
                                 spreadRadius: 5,
                               ),
                               BoxShadow(
-                                color: Colors.pink.withOpacity(0.1),
+                                color: const Color(
+                                  0xFF2E7D32,
+                                ).withOpacity(0.2), // Dark forest shadow
                                 blurRadius: 40,
                                 offset: const Offset(0, 5),
                                 spreadRadius: 10,
@@ -111,13 +113,18 @@ class SplashScreen extends GetView<SplashScreenController> {
                                 width: 120.w,
                                 height: 120.h,
                                 decoration: BoxDecoration(
-                                  color: Colors.grey.shade100,
+                                  color: const Color(
+                                    0xFFE8F5E8,
+                                  ), // Light green background
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Icon(
-                                  Icons.stars_rounded,
+                                  Icons
+                                      .eco_rounded, // Changed to eco icon for botanical theme
                                   size: 60.sp,
-                                  color: Colors.pink.shade300,
+                                  color: const Color(
+                                    0xFF1B5E20,
+                                  ), // Very dark green
                                 ),
                               );
                             },
@@ -143,7 +150,7 @@ class SplashScreen extends GetView<SplashScreenController> {
                             style: TextStyle(
                               fontSize: 28.sp,
                               fontWeight: FontWeight.bold,
-                              color: Colors.grey.shade800,
+                              color: const Color(0xFF1B5E20), // Very dark green
                               letterSpacing: 1.2,
                             ),
                           ),
@@ -167,7 +174,9 @@ class SplashScreen extends GetView<SplashScreenController> {
                             'Smart Attendance Solution',
                             style: TextStyle(
                               fontSize: 16.sp,
-                              color: Colors.grey.shade600,
+                              color: const Color(
+                                0xFF2E7D32,
+                              ), // Dark forest green
                               fontWeight: FontWeight.w400,
                               letterSpacing: 0.5,
                             ),
@@ -200,10 +209,14 @@ class SplashScreen extends GetView<SplashScreenController> {
                             vertical: 8.h,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.8),
+                            color: const Color(
+                              0xFFFFFEF7,
+                            ).withOpacity(0.9), // Cream with opacity
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(
-                              color: Colors.grey.shade200,
+                              color: const Color(
+                                0xFFD4E6D4,
+                              ), // Medium botanical border
                               width: 1,
                             ),
                           ),
@@ -212,7 +225,9 @@ class SplashScreen extends GetView<SplashScreenController> {
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               fontSize: 12.sp,
-                              color: Colors.grey.shade600,
+                              color: const Color(
+                                0xFF2E7D32,
+                              ), // Dark forest green
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -223,7 +238,9 @@ class SplashScreen extends GetView<SplashScreenController> {
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 10.sp,
-                            color: Colors.grey.shade500,
+                            color: const Color(
+                              0xFF388E3C,
+                            ), // Medium forest green
                             fontWeight: FontWeight.w400,
                           ),
                         ),
@@ -272,7 +289,8 @@ class DotPatternPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.grey.withOpacity(0.1)
+      ..color = const Color(0xFF2E7D32)
+          .withOpacity(0.12) // Dark forest dots
       ..strokeWidth = 1;
 
     const spacing = 30.0;
@@ -406,8 +424,10 @@ class _PulsingLoadingIndicatorState extends State<_PulsingLoadingIndicator>
             height: 50.h,
             child: CircularProgressIndicator(
               strokeWidth: 3,
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.pink.shade300),
-              backgroundColor: Colors.grey.shade200,
+              valueColor: const AlwaysStoppedAnimation<Color>(
+                Color(0xFF2E7D32),
+              ), // Dark forest green
+              backgroundColor: const Color(0xFFD4E6D4), // Medium botanical
             ),
           ),
           Center(
@@ -421,10 +441,12 @@ class _PulsingLoadingIndicatorState extends State<_PulsingLoadingIndicator>
                     height: 12.h,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: Colors.pink.shade400,
+                      color: const Color(0xFF1B5E20), // Very dark green
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.pink.withOpacity(0.4),
+                          color: const Color(
+                            0xFF2E7D32,
+                          ).withOpacity(0.5), // Dark forest shadow
                           blurRadius: 8,
                           spreadRadius: 2,
                         ),
