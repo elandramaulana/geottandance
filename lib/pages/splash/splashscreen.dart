@@ -427,7 +427,7 @@ class _PulsingLoadingIndicatorState extends State<_PulsingLoadingIndicator>
               valueColor: const AlwaysStoppedAnimation<Color>(
                 Color(0xFF2E7D32),
               ), // Dark forest green
-              backgroundColor: const Color(0xFFD4E6D4), // Medium botanical
+              backgroundColor: const Color(0xFFD4E6D4),
             ),
           ),
           Center(
@@ -441,12 +441,10 @@ class _PulsingLoadingIndicatorState extends State<_PulsingLoadingIndicator>
                     height: 12.h,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: const Color(0xFF1B5E20), // Very dark green
+                      color: const Color(0xFF1B5E20),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(
-                            0xFF2E7D32,
-                          ).withOpacity(0.5), // Dark forest shadow
+                          color: const Color(0xFF2E7D32).withOpacity(0.5),
                           blurRadius: 8,
                           spreadRadius: 2,
                         ),
