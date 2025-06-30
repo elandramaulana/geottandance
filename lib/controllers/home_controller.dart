@@ -21,10 +21,4 @@ class HomeController extends GetxController {
     clockInTime.value = '';
     clockOutTime.value = '';
   }
-
-  @override
-  void onInit() {
-    super.onInit();
-    // Inisialisasi jika diperlukan
-  }
 }

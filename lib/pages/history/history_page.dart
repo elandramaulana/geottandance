@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 // perlu implementasi get x
 class CheckOutPage extends StatelessWidget {
-  const CheckOutPage({Key? key}) : super(key: key);
+  const CheckOutPage({super.key});
 
   @override
   Widget build(BuildContext context) {

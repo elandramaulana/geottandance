@@ -7,7 +7,7 @@ import 'package:geottandance/widgets/navbar_widget.dart';
 import 'package:get/get.dart';
 
 class MainNavigationPage extends StatelessWidget {
-  const MainNavigationPage({Key? key}) : super(key: key);
+  const MainNavigationPage({super.key});
 
   @override
   Widget build(BuildContext context) {

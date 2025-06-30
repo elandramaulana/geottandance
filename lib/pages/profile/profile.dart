@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 
 class TotalHoursPage extends StatelessWidget {
-  const TotalHoursPage({Key? key}) : super(key: key);
+  const TotalHoursPage({super.key});
 
   @override
   Widget build(BuildContext context) {

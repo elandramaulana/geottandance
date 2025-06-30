@@ -4,7 +4,7 @@ import 'package:geottandance/controllers/navbar_controller.dart';
 import 'package:get/get.dart';
 
 class FloatingBottomNav extends StatelessWidget {
-  const FloatingBottomNav({Key? key}) : super(key: key);
+  const FloatingBottomNav({super.key});
 
   @override
   Widget build(BuildContext context) {
