@@ -25,7 +25,7 @@ class AppPages {
     ),
     GetPage(
       name: AppRoutes.bottomNav,
-      page: () => const MainNavigationPage(),
+      page: () => const MainScreen(),
       binding: NavigationBinding(),
     ),
     GetPage(
