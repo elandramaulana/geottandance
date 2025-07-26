@@ -8,7 +8,7 @@ class AppRoutes {
   static const String addAttendance = '/addAttendance';
   static const String profile = '/profile';
   static const String history = '/history';
-  static const String historyDetail = '/historyDetail';
+  static const String historyDetail = '/history-detail';
   static const String bottomNav = '/navbar';
   static const String correction = '/correction';
   static const String pengajuanSakit = '/pengajuanSakit';

@@ -1,16 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:geottandance/controllers/navbar_controller.dart';
 import 'package:geottandance/widgets/navbar_widget.dart';
 import 'package:get/get.dart';
 
-<<<<<<< HEAD
-class MainNavigationPage extends StatelessWidget {
-  const MainNavigationPage({super.key});
-=======
 class MainScreen extends StatelessWidget {
   const MainScreen({Key? key}) : super(key: key);
->>>>>>> ef18e0413942664de87036e7170aa17ae7220c0d
 
   @override
   Widget build(BuildContext context) {
