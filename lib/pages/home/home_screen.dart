@@ -45,14 +45,6 @@ class HomeScreen extends GetView<HomeController> {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            'Good Morning,',
-                            style: TextStyle(
-                              color: Colors.white70,
-                              fontSize: 14.sp,
-                              fontWeight: FontWeight.w400,
-                            ),
-                          ),
                           SizedBox(height: 4.h),
                           Text(
                             'John Doe',
@@ -76,7 +68,7 @@ class HomeScreen extends GetView<HomeController> {
                       Container(
                         padding: EdgeInsets.all(8.w),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
+                          color: Colors.white.withValues(alpha: 0.2),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
@@ -87,7 +79,7 @@ class HomeScreen extends GetView<HomeController> {
                       ),
                     ],
                   ),
-                  SizedBox(height: 30.h),
+                  SizedBox(height: 20.h),
 
                   // Clock In/Out Cards
                   Row(
@@ -124,7 +116,7 @@ class HomeScreen extends GetView<HomeController> {
           Align(
             alignment: Alignment.bottomCenter,
             child: Container(
-              height: 0.46.sh,
+              height: 0.51.sh,
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.only(
@@ -133,7 +125,7 @@ class HomeScreen extends GetView<HomeController> {
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: Colors.black.withValues(alpha: 0.1),
                     blurRadius: 20,
                     offset: Offset(0, -5),
                   ),
@@ -194,7 +186,7 @@ class HomeScreen extends GetView<HomeController> {
                         ],
                       ),
 
-                      SizedBox(height: 30.h),
+                      SizedBox(height: 10.h),
 
                       // Recent Activity Section
                       Row(
@@ -226,13 +218,14 @@ class HomeScreen extends GetView<HomeController> {
                       // Activity List
                       _buildActivityItem(
                         icon: Icons.login,
-                        title: 'Clock In',
-                        subtitle: 'Today at 08:00 AM',
-                        time: '2h ago',
-                        color: Color(0xFF10B981),
-                        status: 'On Time',
+                        title: "Morning Check-in",
+                        subtitle: "Regular attendance",
+                        time: "08:00 AM",
+                        color: Color(0xFF059669),
+                        status: "on time",
+                        activityType: "clockin", // Parameter baru
                       ),
-                      SizedBox(height: 12.h),
+                      SizedBox(height: 2.h),
                       _buildActivityItem(
                         icon: Icons.logout,
                         title: 'Clock Out',
@@ -240,8 +233,9 @@ class HomeScreen extends GetView<HomeController> {
                         time: '1d ago',
                         color: Color(0xFFEF4444),
                         status: 'Completed',
+                        activityType: "visit",
                       ),
-                      SizedBox(height: 12.h),
+                      SizedBox(height: 2.h),
                       _buildActivityItem(
                         icon: Icons.medical_services,
                         title: 'Sick Leave',
@@ -249,8 +243,9 @@ class HomeScreen extends GetView<HomeController> {
                         time: '3d ago',
                         color: Color(0xFF8B5CF6),
                         status: 'Approved',
+                        activityType: "onleave",
                       ),
-                      SizedBox(height: 12.h),
+                      SizedBox(height: 2.h),
                       _buildActivityItem(
                         icon: Icons.event_available,
                         title: 'Annual Leave',
@@ -258,9 +253,20 @@ class HomeScreen extends GetView<HomeController> {
                         time: '5d ago',
                         color: Color(0xFFF59E0B),
                         status: 'Pending',
+                        activityType: "break",
+                      ),
+                      SizedBox(height: 2.h),
+                      _buildActivityItem(
+                        icon: Icons.event_available,
+                        title: 'Annual Leave',
+                        subtitle: 'Vacation request submitted',
+                        time: '5d ago',
+                        color: Color(0xFFF59E0B),
+                        status: 'Pending',
+                        activityType: "overtime",
                       ),
 
-                      SizedBox(height: 100.h),
+                      SizedBox(height: 10.h),
                     ],
                   ),
                 ),
@@ -288,12 +294,15 @@ class HomeScreen extends GetView<HomeController> {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.15),
+        color: Colors.white.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: Colors.white.withOpacity(0.2), width: 1.5),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.2),
+          width: 1.5,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 10,
             offset: Offset(0, 5),
           ),
@@ -307,7 +316,7 @@ class HomeScreen extends GetView<HomeController> {
               Container(
                 padding: EdgeInsets.all(8.w),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.2),
+                  color: color.withValues(alpha: 0.2),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(icon, color: Colors.white, size: 20.sp),
@@ -317,8 +326,8 @@ class HomeScreen extends GetView<HomeController> {
                 padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                 decoration: BoxDecoration(
                   color: isClockIn
-                      ? Colors.green.withOpacity(0.2)
-                      : Colors.orange.withOpacity(0.2),
+                      ? Colors.green.withValues(alpha: 0.2)
+                      : Colors.orange.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12.r),
                 ),
                 child: Text(
@@ -365,49 +374,115 @@ class HomeScreen extends GetView<HomeController> {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: Colors.white,
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Colors.white, color.withValues(alpha: 0.03)],
+        ),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: color.withOpacity(0.1), width: 1),
+        border: Border.all(color: color.withValues(alpha: 0.12), width: 1.2),
         boxShadow: [
           BoxShadow(
-            color: color.withOpacity(0.1),
-            blurRadius: 10,
-            offset: Offset(0, 5),
+            color: color.withValues(alpha: 0.08),
+            blurRadius: 16,
+            offset: Offset(0, 6),
+            spreadRadius: 0,
+          ),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 8,
+            offset: Offset(0, 2),
+            spreadRadius: 0,
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
+          // Icon Container
           Container(
-            padding: EdgeInsets.all(8.w),
+            padding: EdgeInsets.all(10.w),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              shape: BoxShape.circle,
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  color.withValues(alpha: 0.15),
+                  color.withValues(alpha: 0.08),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(12.r),
+              boxShadow: [
+                BoxShadow(
+                  color: color.withValues(alpha: 0.1),
+                  blurRadius: 6,
+                  offset: Offset(0, 2),
+                ),
+              ],
             ),
-            child: Icon(icon, color: color, size: 18.sp),
+            child: Icon(icon, color: color, size: 20.sp),
           ),
-          SizedBox(height: 12.h),
+
+          SizedBox(height: 14.h),
+
+          // Title
           Text(
             title,
             style: TextStyle(
               color: Colors.grey[600],
               fontSize: 10.sp,
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.3,
             ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
-          SizedBox(height: 4.h),
+
+          SizedBox(height: 6.h),
+
+          // Value
           Text(
             value,
             style: TextStyle(
               color: color,
-              fontSize: 18.sp,
-              fontWeight: FontWeight.bold,
+              fontSize: 22.sp,
+              fontWeight: FontWeight.w800,
+              height: 1.0,
             ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
+
+          SizedBox(height: 2.h),
+
+          // Subtitle
           Text(
             subtitle,
-            style: TextStyle(color: Colors.grey[500], fontSize: 9.sp),
+            style: TextStyle(
+              color: Colors.grey[500],
+              fontSize: 9.sp,
+              fontWeight: FontWeight.w500,
+              height: 1.2,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+
+          SizedBox(height: 12.h),
+
+          // Decorative bottom accent
+          Container(
+            height: 3.h,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(2.r),
+              gradient: LinearGradient(
+                colors: [
+                  color.withValues(alpha: 0.3),
+                  color.withValues(alpha: 0.1),
+                ],
+              ),
+            ),
           ),
         ],
       ),
@@ -421,103 +496,419 @@ class HomeScreen extends GetView<HomeController> {
     required String time,
     required Color color,
     required String status,
+    required String activityType, // Added activity type parameter
   }) {
     return Container(
-      padding: EdgeInsets.all(16.w),
+      margin: EdgeInsets.only(bottom: 8.h),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.grey[100]!, width: 1),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Colors.white, Colors.grey[50]!.withValues(alpha: 0.3)],
+        ),
+        borderRadius: BorderRadius.circular(20.r),
+        border: Border.all(color: Colors.grey[200]!, width: 1.2),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 20,
+            offset: Offset(0, 8),
+            spreadRadius: 0,
+          ),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 10,
-            offset: Offset(0, 2),
+            offset: Offset(0, 4),
+            spreadRadius: 0,
           ),
         ],
       ),
-      child: Row(
-        children: [
-          Container(
-            padding: EdgeInsets.all(12.w),
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(icon, color: color, size: 20.sp),
+      child: Container(
+        padding: EdgeInsets.all(16.w),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20.r),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Colors.white.withValues(alpha: 0.9),
+              Colors.white.withValues(alpha: 0.6),
+            ],
           ),
-          SizedBox(width: 16.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+        ),
+        child: Row(
+          children: [
+            // Enhanced Icon Container with Activity Type Indicator
+            Stack(
               children: [
-                Row(
-                  children: [
-                    Text(
-                      title,
-                      style: TextStyle(
-                        fontSize: 15.sp,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.grey[800],
-                      ),
+                Container(
+                  width: 44.w,
+                  height: 44.w,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        color.withValues(alpha: 0.2),
+                        color.withValues(alpha: 0.1),
+                      ],
                     ),
-                    Spacer(),
-                    Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 8.w,
-                        vertical: 4.h,
-                      ),
-                      decoration: BoxDecoration(
-                        color: _getStatusColor(status).withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8.r),
-                      ),
-                      child: Text(
-                        status,
-                        style: TextStyle(
-                          fontSize: 9.sp,
-                          fontWeight: FontWeight.w600,
-                          color: _getStatusColor(status),
-                        ),
-                      ),
+                    borderRadius: BorderRadius.circular(14.r),
+                    border: Border.all(
+                      color: color.withValues(alpha: 0.3),
+                      width: 1.5,
                     ),
-                  ],
+                    boxShadow: [
+                      BoxShadow(
+                        color: color.withValues(alpha: 0.15),
+                        blurRadius: 8,
+                        offset: Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: Icon(icon, color: color, size: 22.sp),
                 ),
-                SizedBox(height: 4.h),
-                Text(
-                  subtitle,
-                  style: TextStyle(fontSize: 12.sp, color: Colors.grey[600]),
+
+                // Activity Type Badge
+                Positioned(
+                  bottom: -1,
+                  right: -1,
+                  child: Container(
+                    width: 16.w,
+                    height: 16.w,
+                    decoration: BoxDecoration(
+                      color: _getActivityTypeColor(activityType),
+                      borderRadius: BorderRadius.circular(8.r),
+                      border: Border.all(color: Colors.white, width: 1.5),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.1),
+                          blurRadius: 3,
+                          offset: Offset(0, 1),
+                        ),
+                      ],
+                    ),
+                    child: Icon(
+                      _getActivityTypeIcon(activityType),
+                      color: Colors.white,
+                      size: 8.sp,
+                    ),
+                  ),
                 ),
               ],
             ),
-          ),
-          SizedBox(width: 12.w),
-          Text(
-            time,
-            style: TextStyle(
-              fontSize: 11.sp,
-              color: Colors.grey[500],
-              fontWeight: FontWeight.w500,
+
+            SizedBox(width: 14.w),
+
+            // Enhanced Content Area
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Title Row with Activity Type
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              title,
+                              style: TextStyle(
+                                fontSize: 15.sp,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.grey[900],
+                                height: 1.2,
+                                letterSpacing: 0.1,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            SizedBox(height: 1.h),
+                            Text(
+                              _getActivityTypeLabel(activityType),
+                              style: TextStyle(
+                                fontSize: 10.sp,
+                                fontWeight: FontWeight.w600,
+                                color: _getActivityTypeColor(activityType),
+                                letterSpacing: 0.2,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // Enhanced Status Badge
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 10.w,
+                          vertical: 4.h,
+                        ),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              _getStatusColor(status).withValues(alpha: 0.15),
+                              _getStatusColor(status).withValues(alpha: 0.08),
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(10.r),
+                          border: Border.all(
+                            color: _getStatusColor(
+                              status,
+                            ).withValues(alpha: 0.2),
+                            width: 1,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              _getStatusIcon(status),
+                              size: 9.sp,
+                              color: _getStatusColor(status),
+                            ),
+                            SizedBox(width: 3.w),
+                            Text(
+                              status.toUpperCase(),
+                              style: TextStyle(
+                                fontSize: 8.sp,
+                                fontWeight: FontWeight.w700,
+                                color: _getStatusColor(status),
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  SizedBox(height: 8.h),
+
+                  // Subtitle and Time Row with Location Info
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              subtitle,
+                              style: TextStyle(
+                                fontSize: 12.sp,
+                                color: Colors.grey[600],
+                                height: 1.3,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            if (_shouldShowLocationInfo(activityType)) ...[
+                              SizedBox(height: 2.h),
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.location_on,
+                                    size: 10.sp,
+                                    color: Colors.grey[500],
+                                  ),
+                                  SizedBox(width: 3.w),
+                                  Expanded(
+                                    child: Text(
+                                      _getLocationText(activityType),
+                                      style: TextStyle(
+                                        fontSize: 10.sp,
+                                        color: Colors.grey[500],
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+
+                      SizedBox(width: 12.w),
+
+                      // Enhanced Time Display
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 8.w,
+                          vertical: 5.h,
+                        ),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [Colors.grey[100]!, Colors.grey[50]!],
+                          ),
+                          borderRadius: BorderRadius.circular(8.r),
+                          border: Border.all(
+                            color: Colors.grey[200]!,
+                            width: 1,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.access_time,
+                              size: 10.sp,
+                              color: Colors.grey[600],
+                            ),
+                            SizedBox(width: 4.w),
+                            Text(
+                              time,
+                              style: TextStyle(
+                                fontSize: 10.sp,
+                                color: Colors.grey[700],
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: 0.2,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
+  // Helper methods for activity types
+  Color _getActivityTypeColor(String activityType) {
+    switch (activityType.toLowerCase()) {
+      case 'clockin':
+        return Color(0xFF059669); // Green
+      case 'clockout':
+        return Color(0xFFDC2626); // Red
+      case 'visit':
+        return Color(0xFF2563EB); // Blue
+      case 'onleave':
+        return Color(0xFFD97706); // Orange
+      case 'break':
+        return Color(0xFF7C3AED); // Purple
+      case 'overtime':
+        return Color(0xFFEA580C); // Orange-red
+      default:
+        return Color(0xFF6B7280); // Gray
+    }
+  }
+
+  IconData _getActivityTypeIcon(String activityType) {
+    switch (activityType.toLowerCase()) {
+      case 'clockin':
+        return Icons.login;
+      case 'clockout':
+        return Icons.logout;
+      case 'visit':
+        return Icons.location_on;
+      case 'onleave':
+        return Icons.event_busy;
+      case 'break':
+        return Icons.coffee;
+      case 'overtime':
+        return Icons.schedule;
+      default:
+        return Icons.work;
+    }
+  }
+
+  String _getActivityTypeLabel(String activityType) {
+    switch (activityType.toLowerCase()) {
+      case 'clockin':
+        return 'CLOCK IN';
+      case 'clockout':
+        return 'CLOCK OUT';
+      case 'visit':
+        return 'SITE VISIT';
+      case 'onleave':
+        return 'ON LEAVE';
+      case 'break':
+        return 'BREAK TIME';
+      case 'overtime':
+        return 'OVERTIME';
+      default:
+        return activityType.toUpperCase();
+    }
+  }
+
+  bool _shouldShowLocationInfo(String activityType) {
+    return [
+      'clockin',
+      'clockout',
+      'visit',
+    ].contains(activityType.toLowerCase());
+  }
+
+  String _getLocationText(String activityType) {
+    switch (activityType.toLowerCase()) {
+      case 'clockin':
+      case 'clockout':
+        return 'Office Building A';
+      case 'visit':
+        return 'Client Site - PT. Example';
+      default:
+        return 'Unknown Location';
+    }
+  }
+
+  // Enhanced status color method
   Color _getStatusColor(String status) {
     switch (status.toLowerCase()) {
       case 'approved':
-        return Colors.green;
-      case 'pending':
-        return Colors.orange;
-      case 'rejected':
-        return Colors.red;
-      case 'completed':
-        return Colors.blue;
       case 'on time':
-        return Colors.green;
+      case 'completed':
+      case 'success':
+        return Color(0xFF059669); // Emerald
+      case 'pending':
+      case 'waiting':
+        return Color(0xFFD97706); // Amber
+      case 'rejected':
+      case 'failed':
+        return Color(0xFFDC2626); // Red
+      case 'late':
+        return Color(0xFFEA580C); // Orange
+      case 'in progress':
+      case 'active':
+        return Color(0xFF2563EB); // Blue
+      case 'early':
+        return Color(0xFF7C3AED); // Purple
       default:
-        return Colors.grey;
+        return Color(0xFF6B7280); // Gray
+    }
+  }
+
+  // Status icon method
+  IconData _getStatusIcon(String status) {
+    switch (status.toLowerCase()) {
+      case 'approved':
+      case 'on time':
+      case 'completed':
+      case 'success':
+        return Icons.check_circle;
+      case 'pending':
+      case 'waiting':
+        return Icons.access_time;
+      case 'rejected':
+      case 'failed':
+        return Icons.cancel;
+      case 'late':
+        return Icons.warning;
+      case 'in progress':
+      case 'active':
+        return Icons.play_circle;
+      case 'early':
+        return Icons.fast_forward;
+      default:
+        return Icons.help;
     }
   }
 }

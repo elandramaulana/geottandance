@@ -1,3 +1,4 @@
+// lib/main.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:geottandance/core/app_pages.dart';
@@ -25,15 +26,13 @@ class MyApp extends StatelessWidget {
           defaultTransition: Transition.fadeIn,
           transitionDuration: const Duration(milliseconds: 200),
           debugShowCheckedModeBanner: false,
-          theme: ThemeData(
-            textTheme: Theme.of(context).textTheme.apply(fontSizeFactor: 1.0),
-          ),
+
           builder: (context, widget) {
             ScreenUtil.init(context);
             return MediaQuery(
               data: MediaQuery.of(
                 context,
-              ).copyWith(textScaler: TextScaler.linear(1.0)),
+              ).copyWith(textScaler: const TextScaler.linear(1.0)),
               child: widget!,
             );
           },

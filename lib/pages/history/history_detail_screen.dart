@@ -159,7 +159,7 @@ class _MapWidget extends StatelessWidget {
     return ClipRRect(
       borderRadius: BorderRadius.circular(12),
       child: FlutterMap(
-        options: MapOptions(center: LatLng(lat, lng), zoom: 16),
+        options: MapOptions(initialCenter: LatLng(lat, lng), initialZoom: 16),
         children: [
           TileLayer(
             urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
