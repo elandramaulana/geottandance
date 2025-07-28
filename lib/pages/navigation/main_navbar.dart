@@ -4,7 +4,7 @@ import 'package:geottandance/widgets/navbar_widget.dart';
 import 'package:get/get.dart';
 
 class MainScreen extends StatelessWidget {
-  const MainScreen({Key? key}) : super(key: key);
+  const MainScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +28,7 @@ class MainScreen extends StatelessWidget {
 
 // Alternatif: Jika tidak ingin menggunakan IndexedStack
 class MainScreenAlternative extends StatelessWidget {
-  const MainScreenAlternative({Key? key}) : super(key: key);
+  const MainScreenAlternative({super.key});
 
   @override
   Widget build(BuildContext context) {

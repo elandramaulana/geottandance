@@ -6,7 +6,7 @@ import '../../controllers/history_controller.dart';
 import '../../models/history_model.dart';
 
 class HistoryScreen extends GetView<HistoryController> {
-  HistoryScreen({Key? key}) : super(key: key);
+  const HistoryScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

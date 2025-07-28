@@ -3,7 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 // perlu implementasi get x
 class AttendanceScreen extends StatelessWidget {
-  const AttendanceScreen({Key? key}) : super(key: key);
+  const AttendanceScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
