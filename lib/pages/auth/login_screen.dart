@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_svg/svg.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:geottandance/controllers/login_controller.dart';
 import 'package:geottandance/core/app_config.dart';
 import 'package:get/get.dart';
@@ -17,9 +17,9 @@ class LoginScreen extends GetView<LoginController> {
             decoration: const BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  Color(0xFFFFFBF0), // Warm cream
-                  Color(0xFFF5F2E8), // Light yellow cream
-                  Color(0xFFE8E5D6), // Pale yellow
+                  Color(0xFFFFFBF0),
+                  Color(0xFFF5F2E8),
+                  Color(0xFFE8E5D6),
                 ],
                 stops: [0.0, 0.5, 1.0],
                 begin: Alignment.topLeft,
@@ -31,7 +31,7 @@ class LoginScreen extends GetView<LoginController> {
             top: -80,
             left: -60,
             size: 220,
-            color: const Color(0xFF1C5B41), // Deep forest green
+            color: const Color(0xFF1C5B41),
             opacity: 0.3,
             duration: 4000,
           ),
@@ -39,7 +39,7 @@ class LoginScreen extends GetView<LoginController> {
             top: 100,
             right: -40,
             size: 160,
-            color: const Color(0xFFCCAC6B), // Golden yellow
+            color: const Color(0xFFCCAC6B),
             opacity: 0.25,
             duration: 3500,
           ),
@@ -47,7 +47,7 @@ class LoginScreen extends GetView<LoginController> {
             bottom: -40,
             right: -40,
             size: 180,
-            color: const Color(0xFF1C5B41), // Deep forest green
+            color: const Color(0xFF1C5B41),
             opacity: 0.35,
             duration: 5000,
           ),
@@ -55,7 +55,7 @@ class LoginScreen extends GetView<LoginController> {
             bottom: 80,
             left: 30,
             size: 120,
-            color: const Color(0xFFCCAC6B), // Golden yellow
+            color: const Color(0xFFCCAC6B),
             opacity: 0.3,
             duration: 4500,
           ),
@@ -63,13 +63,11 @@ class LoginScreen extends GetView<LoginController> {
             top: 200,
             left: 20,
             size: 90,
-            color: const Color(0xFF1C5B41), // Deep forest green
+            color: const Color(0xFF1C5B41),
             opacity: 0.25,
             duration: 3000,
           ),
-
           _buildDotsPattern(),
-
           Positioned(
             bottom: 30.h,
             left: 0,
@@ -82,7 +80,6 @@ class LoginScreen extends GetView<LoginController> {
                 return Opacity(
                   opacity: value,
                   child: Column(
-                    mainAxisSize: MainAxisSize.min,
                     children: [
                       Container(
                         padding: EdgeInsets.symmetric(
@@ -90,14 +87,10 @@ class LoginScreen extends GetView<LoginController> {
                           vertical: 8.h,
                         ),
                         decoration: BoxDecoration(
-                          color: const Color(
-                            0xFFFFFEF7,
-                          ).withOpacity(0.9), // Cream with opacity
+                          color: const Color(0xFFFFFEF7).withOpacity(0.9),
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
-                            color: const Color(
-                              0xFFD4E6D4,
-                            ), // Medium botanical border
+                            color: const Color(0xFFD4E6D4),
                             width: 1,
                           ),
                         ),
@@ -106,7 +99,7 @@ class LoginScreen extends GetView<LoginController> {
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 12.sp,
-                            color: const Color(0xFF2E7D32), // Dark forest green
+                            color: const Color(0xFF2E7D32),
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -114,10 +107,9 @@ class LoginScreen extends GetView<LoginController> {
                       SizedBox(height: 8.h),
                       Text(
                         'Powered by Flutter',
-                        textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 10.sp,
-                          color: const Color(0xFF388E3C), // Medium forest green
+                          color: const Color(0xFF388E3C),
                           fontWeight: FontWeight.w400,
                         ),
                       ),
@@ -133,7 +125,6 @@ class LoginScreen extends GetView<LoginController> {
                 padding: EdgeInsets.all(25.w),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     SvgPicture.asset(
                       'assets/svgs/time.svg',
@@ -145,57 +136,31 @@ class LoginScreen extends GetView<LoginController> {
                       style: TextStyle(
                         fontSize: 24.sp,
                         fontWeight: FontWeight.bold,
-                        color: const Color(0xFF1C5B41), // Deep forest green
+                        color: const Color(0xFF1C5B41),
                       ),
                     ),
-                    SizedBox(height: 30.h),
+                    SizedBox(height: 20.h),
                     TextField(
                       controller: controller.emailController,
-                      decoration: InputDecoration(
-                        labelText: 'Email',
-                        prefixIcon: const Icon(
-                          Icons.email,
-                          color: Colors.blueGrey,
-                        ),
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12.r),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
+                      decoration: _inputDecoration('Email', Icons.email),
                     ),
                     SizedBox(height: 20.h),
                     TextField(
                       controller: controller.passwordController,
                       obscureText: true,
-                      decoration: InputDecoration(
-                        labelText: 'Password',
-                        prefixIcon: const Icon(
-                          Icons.lock,
-                          color: Colors.blueGrey,
-                        ),
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12.r),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
+                      decoration: _inputDecoration('Password', Icons.lock),
                     ),
-                    SizedBox(height: 30.h),
+                    SizedBox(height: 20.h),
                     Obx(() {
                       return SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
                           onPressed: controller.isLoading.value
                               ? null
-                              : () {
-                                  controller.login();
-                                },
+                              : () => controller.login(),
                           style: ElevatedButton.styleFrom(
                             padding: EdgeInsets.symmetric(vertical: 15.h),
-                            backgroundColor: Color.fromARGB(255, 24, 75, 26),
+                            backgroundColor: const Color(0xFF184B1A),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12.r),
                             ),
@@ -219,6 +184,58 @@ class LoginScreen extends GetView<LoginController> {
                         ),
                       );
                     }),
+                    // SizedBox(height: 5.h),
+                    Container(
+                      margin: EdgeInsets.only(top: 10.h, bottom: 20.h),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 16.w,
+                        vertical: 12.h,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFFEF7).withOpacity(0.9),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: const Color(0xFFD4E6D4)),
+                      ),
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                'Don\'t have an account? ',
+                                style: TextStyle(
+                                  fontSize: 14.sp,
+                                  color: const Color(0xFF2E7D32),
+                                ),
+                              ),
+                              GestureDetector(
+                                onTap: () => Get.toNamed('/register'),
+                                child: Text(
+                                  'Register',
+                                  style: TextStyle(
+                                    fontSize: 14.sp,
+                                    color: const Color(0xFF388E3C),
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 6.h),
+                          GestureDetector(
+                            onTap: () => Get.toNamed('/forgotPassword'),
+                            child: Text(
+                              'Forgot Password?',
+                              style: TextStyle(
+                                fontSize: 14.sp,
+                                color: const Color(0xFF388E3C),
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -256,29 +273,19 @@ class LoginScreen extends GetView<LoginController> {
   Widget _buildDotsPattern() {
     return Positioned.fill(child: CustomPaint(painter: DotPatternPainter()));
   }
-}
 
-class DotPatternPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = const Color(0xFF2E7D32)
-          .withOpacity(0.12) // Dark forest dots
-      ..strokeWidth = 1;
-
-    const spacing = 30.0;
-
-    for (double x = 0; x < size.width; x += spacing) {
-      for (double y = 0; y < size.height; y += spacing) {
-        if ((x / spacing + y / spacing) % 4 == 0) {
-          canvas.drawCircle(Offset(x, y), 1, paint);
-        }
-      }
-    }
+  InputDecoration _inputDecoration(String label, IconData icon) {
+    return InputDecoration(
+      labelText: label,
+      prefixIcon: Icon(icon, color: Colors.blueGrey),
+      filled: true,
+      fillColor: Colors.white,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12.r),
+        borderSide: BorderSide.none,
+      ),
+    );
   }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 class _FloatingCircleWidget extends StatefulWidget {
@@ -353,117 +360,23 @@ class _FloatingCircleWidgetState extends State<_FloatingCircleWidget>
   }
 }
 
-class _PulsingLoadingIndicator extends StatefulWidget {
+class DotPatternPainter extends CustomPainter {
   @override
-  State<_PulsingLoadingIndicator> createState() =>
-      _PulsingLoadingIndicatorState();
-}
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = const Color(0xFF2E7D32).withOpacity(0.12)
+      ..strokeWidth = 1;
 
-class _PulsingLoadingIndicatorState extends State<_PulsingLoadingIndicator>
-    with TickerProviderStateMixin {
-  late AnimationController _pulseController;
-  late Animation<double> _pulseAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _pulseController = AnimationController(
-      duration: const Duration(milliseconds: 1000),
-      vsync: this,
-    );
-
-    _pulseAnimation = Tween<double>(begin: 0.5, end: 1.0).animate(
-      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
-    );
-
-    _pulseController.repeat(reverse: true);
+    const spacing = 30.0;
+    for (double x = 0; x < size.width; x += spacing) {
+      for (double y = 0; y < size.height; y += spacing) {
+        if ((x / spacing + y / spacing) % 4 == 0) {
+          canvas.drawCircle(Offset(x, y), 1, paint);
+        }
+      }
+    }
   }
 
   @override
-  void dispose() {
-    _pulseController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 50.w,
-      height: 50.h,
-      child: Stack(
-        children: [
-          SizedBox(
-            width: 50.w,
-            height: 50.h,
-            child: CircularProgressIndicator(
-              strokeWidth: 3,
-              valueColor: const AlwaysStoppedAnimation<Color>(
-                Color(0xFF2E7D32),
-              ), // Dark forest green
-              backgroundColor: const Color(0xFFD4E6D4), // Medium botanical
-            ),
-          ),
-          Center(
-            child: AnimatedBuilder(
-              animation: _pulseAnimation,
-              builder: (context, child) {
-                return Transform.scale(
-                  scale: _pulseAnimation.value,
-                  child: Container(
-                    width: 12.w,
-                    height: 12.h,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: const Color(0xFF1B5E20), // Very dark green
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(
-                            0xFF2E7D32,
-                          ).withOpacity(0.5), // Dark forest shadow
-                          blurRadius: 8,
-                          spreadRadius: 2,
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  InputDecoration _inputDecoration(String label, IconData icon) {
-    return InputDecoration(
-      labelText: label,
-      prefixIcon: Icon(icon, color: Colors.blueGrey),
-      filled: true,
-      fillColor: Colors.white,
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12.r),
-        borderSide: BorderSide.none,
-      ),
-    );
-  }
-
-  Widget _circle(double w, double h, Color color) {
-    return Container(
-      width: w,
-      height: h,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: color.withOpacity(0.3),
-      ),
-    );
-  }
-
-  ButtonStyle _buttonStyle() {
-    return ElevatedButton.styleFrom(
-      padding: EdgeInsets.symmetric(vertical: 15.h),
-      backgroundColor: Colors.blueGrey,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
-    );
-  }
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

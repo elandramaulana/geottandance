@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:geottandance/core/app_routes.dart';
+import 'package:geottandance/utils/snackbar_util.dart';
 
 class RegisterController extends GetxController {
   final TextEditingController emailController = TextEditingController();
@@ -18,12 +19,12 @@ class RegisterController extends GetxController {
     final confirmPassword = confirmPasswordController.text;
 
     if (email.isEmpty || password.isEmpty || confirmPassword.isEmpty) {
-      Get.snackbar('Error', 'All fields must be completed');
+      SnackbarUtil.showError('All fields must be completed');
       return;
     }
 
     if (password != confirmPassword) {
-      Get.snackbar('Warning', 'Password and confirmation do not match');
+      SnackbarUtil.showWarning('Password and confirmation do not match');
       return;
     }
 
@@ -31,32 +32,14 @@ class RegisterController extends GetxController {
     error.value = null;
     try {
       await Future.delayed(const Duration(seconds: 1));
-      Get.snackbar('Success', 'Register successful');
+      SnackbarUtil.showSuccess('Register successful');
       await Future.delayed(const Duration(seconds: 1));
       Get.offAllNamed(AppRoutes.login);
     } catch (e) {
       error(e.toString());
-      Get.snackbar(
-        'Error',
-        error.value ?? 'Register failed',
-        backgroundColor: Colors.red.shade100,
-        colorText: Colors.black,
-      );
+      SnackbarUtil.showError('Register failed');
     } finally {
       isLoading(false);
     }
-  }
-
-  void _showDialog(String title, String message, {VoidCallback? onOk}) {
-    Get.defaultDialog(
-      title: title,
-      middleText: message,
-      textConfirm: 'OK',
-      confirmTextColor: Colors.white,
-      onConfirm: () {
-        Get.back(); // tutup dialog
-        if (onOk != null) onOk();
-      },
-    );
   }
 }

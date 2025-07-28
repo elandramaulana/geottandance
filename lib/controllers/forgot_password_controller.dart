@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:geottandance/core/app_routes.dart';
+import 'package:geottandance/utils/snackbar_util.dart';
 
 class ForgotPasswordController extends GetxController {
   final TextEditingController emailController = TextEditingController();
@@ -11,24 +12,19 @@ class ForgotPasswordController extends GetxController {
     final email = emailController.text.trim();
 
     if (email.isEmpty) {
-      Get.snackbar('Error', 'Email tidak boleh kosong');
+      SnackbarUtil.showError('Email cannot be empty');
       return;
     }
     isLoading(true);
     error.value = null;
     try {
       await Future.delayed(const Duration(seconds: 1));
-      Get.snackbar('Success', 'Reset link successfully sent to email');
+      SnackbarUtil.showSuccess('Reset link successfully sent to email');
       await Future.delayed(const Duration(seconds: 1));
       Get.offAllNamed(AppRoutes.login);
     } catch (e) {
       error(e.toString());
-      Get.snackbar(
-        'Error',
-        error.value ?? 'Link reset failed',
-        backgroundColor: Colors.red.shade100,
-        colorText: Colors.black,
-      );
+      SnackbarUtil.showError(error.value ?? 'Link reset failed');
     } finally {
       isLoading(false);
     }
