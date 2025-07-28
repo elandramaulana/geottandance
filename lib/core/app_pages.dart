@@ -1,3 +1,4 @@
+import 'package:geottandance/bindings/atendance_binding.dart';
 import 'package:geottandance/bindings/forgot_password_binding.dart';
 import 'package:geottandance/bindings/home_binding.dart';
 import 'package:geottandance/bindings/login_binding.dart';
@@ -5,6 +6,7 @@ import 'package:geottandance/bindings/navbar_binding.dart';
 import 'package:geottandance/bindings/register_binding.dart';
 import 'package:geottandance/controllers/splash_controller.dart';
 import 'package:geottandance/core/app_routes.dart';
+import 'package:geottandance/pages/attendance/attendance_page.dart';
 import 'package:geottandance/pages/auth/forgot_password_screen.dart';
 import 'package:geottandance/pages/auth/login_screen.dart';
 import 'package:geottandance/pages/auth/register_screen.dart';
@@ -45,21 +47,16 @@ class AppPages {
       page: () => const ForgotPasswordScreen(),
       binding: ForgotPasswordBinding(),
     ),
-    // GetPage(
-    //   name: AppRoutes.home,
-    //   page: () => const HomeScreen(),
-    //   binding: HomeBinding(),
-    // ),
     GetPage(
       name: AppRoutes.home,
       page: () => const HomeScreen(),
       binding: HomeBinding(),
     ),
-    // GetPage(
-    //   name: AppRoutes.history,
-    //   page: () => const HistoryPage(),
-    //   binding: HistoryBinding(),
-    // ),
+    GetPage(
+      name: AppRoutes.attendance,
+      page: () => const AttendanceScreen(),
+      binding: AttendanceBinding(),
+    ),
     // GetPage(
     //   name: AppRoutes.historyDetail,
     //   page: () => const HistoryDetailPage(),
