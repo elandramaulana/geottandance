@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:geottandance/controllers/navbar_controller.dart';
 import 'package:geottandance/widgets/navbar_widget.dart';
 import 'package:get/get.dart';

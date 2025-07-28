@@ -45,14 +45,6 @@ class HomeScreen extends GetView<HomeController> {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            'Good Morning,',
-                            style: TextStyle(
-                              color: Colors.white70,
-                              fontSize: 14.sp,
-                              fontWeight: FontWeight.w400,
-                            ),
-                          ),
                           SizedBox(height: 4.h),
                           Text(
                             'John Doe',

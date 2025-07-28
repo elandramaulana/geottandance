@@ -4,6 +4,7 @@ import 'package:geottandance/bindings/home_binding.dart';
 import 'package:geottandance/bindings/login_binding.dart';
 import 'package:geottandance/bindings/navbar_binding.dart';
 import 'package:geottandance/bindings/register_binding.dart';
+import 'package:geottandance/bindings/history_binding.dart';
 import 'package:geottandance/controllers/splash_controller.dart';
 import 'package:geottandance/core/app_routes.dart';
 import 'package:geottandance/pages/attendance/attendance_page.dart';
@@ -13,6 +14,8 @@ import 'package:geottandance/pages/auth/register_screen.dart';
 import 'package:geottandance/pages/home/home_screen.dart';
 import 'package:geottandance/pages/navigation/main_navbar.dart';
 import 'package:geottandance/pages/splash/splashscreen.dart';
+import 'package:geottandance/pages/history/history_detail_screen.dart';
+import 'package:geottandance/pages/history/history_screen.dart';
 import 'package:get/get.dart';
 
 class AppPages {
@@ -28,7 +31,11 @@ class AppPages {
     GetPage(
       name: AppRoutes.bottomNav,
       page: () => const MainScreen(),
-      binding: NavigationBinding(),
+      bindings: [
+        NavigationBinding(),
+        HomeBinding(), // ✅ jika HomeController butuh
+        HistoryBinding(), // ✅ ini penting
+      ],
     ),
     GetPage(
       name: AppRoutes.login,
@@ -52,9 +59,22 @@ class AppPages {
       page: () => const HomeScreen(),
       binding: HomeBinding(),
     ),
+
+    // History Pages
+    GetPage(
+      name: AppRoutes.history,
+      page: () => HistoryScreen(),
+      binding: HistoryBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.historyDetail,
+      page: () => HistoryDetailScreen(),
+      binding: HistoryBinding(), // Same binding as history screen
+    ),
+
     GetPage(
       name: AppRoutes.attendance,
-      page: () => const AttendanceScreen(),
+      page: () => AttendanceScreen(),
       binding: AttendanceBinding(),
     ),
     // GetPage(
