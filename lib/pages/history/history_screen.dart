@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:geottandance/core/database_helper.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import '../../controllers/history_controller.dart';
 import '../../models/history_model.dart';
 
 class HistoryScreen extends GetView<HistoryController> {
-  HistoryScreen({Key? key}) : super(key: key);
+  const HistoryScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -22,6 +23,18 @@ class HistoryScreen extends GetView<HistoryController> {
         ),
         backgroundColor: const Color(0xFF2E7D5F),
         foregroundColor: Colors.white,
+        actions: [
+          // Delete All Button
+          Obx(
+            () => controller.filteredHistories.isNotEmpty
+                ? IconButton(
+                    icon: const Icon(Icons.delete_sweep),
+                    onPressed: () => _showDeleteAllDialog(context),
+                    tooltip: 'Delete All History',
+                  )
+                : const SizedBox(),
+          ),
+        ],
       ),
       body: Padding(
         padding: EdgeInsets.all(16.w),
@@ -194,6 +207,78 @@ class HistoryScreen extends GetView<HistoryController> {
         ),
       ),
     );
+  }
+
+  void _showDeleteAllDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Delete All History'),
+          content: const Text(
+            'Are you sure you want to delete all attendance history? This action cannot be undone.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.of(context).pop();
+                await _deleteAllHistory(context);
+              },
+              style: TextButton.styleFrom(foregroundColor: Colors.red),
+              child: const Text('Delete All'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _deleteAllHistory(BuildContext context) async {
+    try {
+      // Show loading indicator
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(child: CircularProgressIndicator()),
+      );
+
+      // Delete all data from database
+      final dbHelper = DatabaseHelper();
+      await dbHelper.deleteAllAttendance();
+
+      // Refresh the history data in controller
+      await controller.refreshHistory();
+
+      // Hide loading indicator
+      Navigator.of(context).pop();
+
+      // Show success message
+      Get.snackbar(
+        'Success',
+        'All attendance history has been deleted successfully',
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
+        duration: const Duration(seconds: 2),
+      );
+    } catch (e) {
+      // Hide loading indicator
+      Navigator.of(context).pop();
+
+      // Show error message
+      Get.snackbar(
+        'Error',
+        'Failed to delete history: ${e.toString()}',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
+        duration: const Duration(seconds: 3),
+      );
+    }
   }
 
   Color _getCategoryColor(String category) {
