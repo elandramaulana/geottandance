@@ -18,10 +18,6 @@ class HomeScreen extends GetView<HomeController> {
 
   @override
   Widget build(BuildContext context) {
-    // Initialize controllers
-    Get.put(AttendanceController());
-    Get.put(HomeController());
-
     return Scaffold(
       backgroundColor: Colors.grey[50],
       body: Stack(

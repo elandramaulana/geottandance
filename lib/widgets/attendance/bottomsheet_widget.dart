@@ -50,7 +50,7 @@ class AttendanceBottomSheet extends StatelessWidget {
                 CurrentTimeDisplay(currentTime: currentTime),
                 TodaysSummaryCard(controller: controller),
                 SizedBox(height: 20.h),
-                ActionButtons(controller: controller),
+                // ActionButtons(controller: controller),
                 SizedBox(height: 32.h),
               ],
             ),

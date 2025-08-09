@@ -19,45 +19,46 @@ class AttendanceMapWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Obx(
-      () => FlutterMap(
-        mapController: mapController.mapController,
-        options: MapOptions(
-          initialCenter: attendanceController.currentPosition != null
-              ? LatLng(
-                  attendanceController.currentPosition!.latitude,
-                  attendanceController.currentPosition!.longitude,
-                )
-              : const LatLng(0, 0),
-          initialZoom: 16.0,
-          onTap: (tapPosition, point) {
-            mapController.onMapTap(attendanceController.currentPosition);
-          },
-        ),
-        children: [
-          TileLayer(
-            urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-            userAgentPackageName: 'com.example.attendance_app',
-          ),
-          // Current location marker
-          if (attendanceController.currentPosition != null)
-            MarkerLayer(
-              markers: [
-                mapController.buildCurrentLocationMarker(
-                  attendanceController.currentPosition!,
-                ),
-              ],
-            ),
-          // Attendance history markers
-          MarkerLayer(
-            markers: mapController.buildAttendanceMarkers(
-              attendanceController.attendanceRecords,
-              _showAttendanceDetail,
-            ),
-          ),
-        ],
-      ),
-    );
+    return Scaffold(); // HAPUS INI GANTI SAMA OBX YG DI BAWAH!
+    // Obx(
+    //   () => FlutterMap(
+    //     mapController: mapController.mapController,
+    //     options: MapOptions(
+    //       initialCenter: attendanceController.currentPosition != null
+    //           ? LatLng(
+    //               attendanceController.currentPosition!.latitude,
+    //               attendanceController.currentPosition!.longitude,
+    //             )
+    //           : const LatLng(0, 0),
+    //       initialZoom: 16.0,
+    //       onTap: (tapPosition, point) {
+    //         mapController.onMapTap(attendanceController.currentPosition);
+    //       },
+    //     ),
+    //     children: [
+    //       TileLayer(
+    //         urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+    //         userAgentPackageName: 'com.example.attendance_app',
+    //       ),
+    //       // Current location marker
+    //       if (attendanceController.currentPosition != null)
+    //         MarkerLayer(
+    //           markers: [
+    //             mapController.buildCurrentLocationMarker(
+    //               attendanceController.currentPosition!,
+    //             ),
+    //           ],
+    //         ),
+    //       // Attendance history markers
+    //       MarkerLayer(
+    //         markers: mapController.buildAttendanceMarkers(
+    //           attendanceController.attendanceRecords,
+    //           _showAttendanceDetail,
+    //         ),
+    //       ),
+    //     ],
+    //   ),
+    // );
   }
 
   void _showAttendanceDetail(dynamic record) {

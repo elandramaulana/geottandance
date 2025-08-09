@@ -37,8 +37,8 @@ class AttendanceTopAppBar extends StatelessWidget {
                 _buildAppBarButton(
                   icon: Icons.refresh_rounded,
                   color: const Color(0xFF667EEA),
-                  onTap: () =>
-                      Get.find<AttendanceController>().refreshLocation(),
+                  onTap: () => {},
+                  // Get.find<AttendanceController>().refreshLocation(),
                 ),
                 const Spacer(),
                 Text(
@@ -57,9 +57,11 @@ class AttendanceTopAppBar extends StatelessWidget {
                     _buildAppBarButton(
                       icon: Icons.my_location_rounded,
                       color: const Color(0xFF667EEA),
-                      onTap: () => mapController.centerOnCurrentLocation(
-                        attendanceController.currentPosition,
-                      ),
+                      onTap: () => {},
+                      // MASUKKAN KE DALAM ONTAP
+                      // mapController.centerOnCurrentLocation(
+                      //   attendanceController.currentPosition,
+                      // ),
                     ),
                   ],
                 ),

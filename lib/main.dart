@@ -2,10 +2,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:geottandance/core/app_pages.dart';
+import 'package:geottandance/services/service_initializer.dart';
 import 'package:get/get.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Inisialisasi services menggunakan ServiceInitializer
+  await ServiceInitializer.initializeServices();
   runApp(const MyApp());
 }
 
@@ -20,7 +24,7 @@ class MyApp extends StatelessWidget {
       splitScreenMode: true,
       builder: (context, child) {
         return GetMaterialApp(
-          title: 'Smart Attendance',
+          title: 'GeoAttendance',
           initialRoute: AppPages.initial,
           getPages: AppPages.routes,
           defaultTransition: Transition.fadeIn,
