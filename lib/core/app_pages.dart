@@ -72,11 +72,11 @@ class AppPages {
       binding: HistoryBinding(), // Same binding as history screen
     ),
 
-    GetPage(
-      name: AppRoutes.attendance,
-      page: () => AttendanceScreen(),
-      binding: AttendanceBinding(),
-    ),
+    // GetPage(
+    //   name: AppRoutes.attendance,
+    //   page: () => AttendanceScreen(),
+    //   binding: AttendanceBinding(),
+    // ),
     // GetPage(
     //   name: AppRoutes.historyDetail,
     //   page: () => const HistoryDetailPage(),

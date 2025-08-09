@@ -46,35 +46,33 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final AttendanceController attendanceController = Get.put(
-      AttendanceController(),
-    );
     final AttendanceMapController mapController = Get.put(
       AttendanceMapController(),
     );
 
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: Obx(() {
-        if (attendanceController.isLoading &&
-            attendanceController.currentPosition == null) {
-          return const AttendanceLoadingScreen();
-        }
+    return Scaffold();
+    // Scaffold(
+    //   backgroundColor: Colors.white,
+    //   body: Obx(() {
+    //     if (attendanceController.isLoading &&
+    //         attendanceController.currentPosition == null) {
+    //       return const AttendanceLoadingScreen();
+    //     }
 
-        return Stack(
-          children: [
-            AttendanceMapWidget(
-              attendanceController: attendanceController,
-              mapController: mapController,
-            ),
-            const AttendanceTopAppBar(),
-            AttendanceBottomSheet(
-              controller: attendanceController,
-              currentTime: _currentTime,
-            ),
-          ],
-        );
-      }),
-    );
+    //     return Stack(
+    //       children: [
+    //         AttendanceMapWidget(
+    //           attendanceController: attendanceController,
+    //           mapController: mapController,
+    //         ),
+    //         const AttendanceTopAppBar(),
+    //         AttendanceBottomSheet(
+    //           controller: attendanceController,
+    //           currentTime: _currentTime,
+    //         ),
+    //       ],
+    //     );
+    //   }),
+    // );
   }
 }

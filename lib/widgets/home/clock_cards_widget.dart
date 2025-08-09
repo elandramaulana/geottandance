@@ -13,32 +13,24 @@ class ClockCardsWidget extends StatelessWidget {
     return Row(
       children: [
         Expanded(
-          child: GetBuilder<HomeController>(
-            builder: (controller) => Obx(
-              () => ClockCard(
-                icon: Icons.login,
-                title: 'Clock In',
-                time: controller.clockInTime.value,
-                status: controller.clockInStatus.value,
-                color: Color(0xFF10B981),
-                isClockIn: true,
-              ),
-            ),
+          child: ClockCard(
+            icon: Icons.login,
+            title: 'Clock In',
+            time: '12:00 PM',
+            status: 'On Time',
+            color: Color(0xFF10B981),
+            isClockIn: true,
           ),
         ),
         SizedBox(width: 16.w),
         Expanded(
-          child: GetBuilder<HomeController>(
-            builder: (controller) => Obx(
-              () => ClockCard(
-                icon: Icons.logout,
-                title: 'Clock Out',
-                time: controller.clockOutTime.value,
-                status: controller.clockOutStatus.value,
-                color: Color(0xFFEF4444),
-                isClockIn: false,
-              ),
-            ),
+          child: ClockCard(
+            icon: Icons.logout,
+            title: 'Clock Out',
+            time: '12:00 PM',
+            status: 'On Time',
+            color: Color(0xFFEF4444),
+            isClockIn: false,
           ),
         ),
       ],
