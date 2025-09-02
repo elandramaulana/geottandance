@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:geottandance/pages/attendance/attendance_page.dart';
+import 'package:geottandance/pages/attendance/attendance_screen.dart';
 import 'package:geottandance/pages/history/history_screen.dart';
 import 'package:geottandance/pages/home/home_screen.dart';
 import 'package:geottandance/pages/profile/profile_screen.dart';

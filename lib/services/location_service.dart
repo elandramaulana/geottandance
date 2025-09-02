@@ -1,178 +1,103 @@
 // lib/services/location_service.dart
-import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:geocoding/geocoding.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:get/get.dart';
+import 'package:flutter/foundation.dart';
 
 class LocationService {
-  static Future<bool> requestPermission() async {
-    try {
-      LocationPermission permission = await Geolocator.checkPermission();
+  static final LocationService _instance = LocationService._internal();
+  factory LocationService() => _instance;
+  LocationService._internal();
 
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-      }
-
-      if (permission == LocationPermission.deniedForever) {
-        Get.dialog(
-          AlertDialog(
-            title: const Text('Location Permission Required'),
-            content: const Text(
-              'This app needs location permission to record attendance. Please enable location permission in app settings.',
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Get.back(),
-                child: const Text('Cancel'),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  Get.back();
-                  openAppSettings();
-                },
-                child: const Text('Open Settings'),
-              ),
-            ],
-          ),
-        );
-        return false;
-      }
-
-      return permission == LocationPermission.whileInUse ||
-          permission == LocationPermission.always;
-    } catch (e) {
-      Get.snackbar(
-        'Permission Error',
-        'Failed to request location permission: $e',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Get.theme.colorScheme.error,
-        colorText: Get.theme.colorScheme.onError,
-      );
-      return false;
-    }
+  /// Check if location services are enabled
+  Future<bool> isLocationServiceEnabled() async {
+    return await Geolocator.isLocationServiceEnabled();
   }
 
-  static Future<Position?> getCurrentLocation() async {
-    try {
-      bool hasPermission = await requestPermission();
-      if (!hasPermission) {
-        Get.snackbar(
-          'Permission Denied',
-          'Location permission is required for attendance tracking',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Get.theme.colorScheme.error,
-          colorText: Get.theme.colorScheme.onError,
-        );
-        return null;
-      }
+  /// Check location permission
+  Future<LocationPermission> checkLocationPermission() async {
+    LocationPermission permission = await Geolocator.checkPermission();
 
-      bool isLocationServiceEnabled =
-          await Geolocator.isLocationServiceEnabled();
-      if (!isLocationServiceEnabled) {
-        Get.dialog(
-          AlertDialog(
-            title: const Text('Location Service Disabled'),
-            content: const Text(
-              'Please enable location services on your device to use attendance tracking.',
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Get.back(),
-                child: const Text('Cancel'),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  Get.back();
-                  Geolocator.openLocationSettings();
-                },
-                child: const Text('Open Settings'),
-              ),
-            ],
-          ),
-        );
-        return null;
-      }
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+    }
 
-      // Show loading indicator for location fetching
-      Get.showSnackbar(
-        GetSnackBar(
-          message: 'Getting current location...',
-          duration: const Duration(seconds: 2),
-          showProgressIndicator: true,
-          snackPosition: SnackPosition.BOTTOM,
-        ),
+    return permission;
+  }
+
+  /// Get current position with error handling
+  Future<Position> getCurrentPosition() async {
+    // Check if location services are enabled
+    bool serviceEnabled = await isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      throw Exception(
+        'Location services are disabled. Please enable location services.',
       );
+    }
 
+    // Check permissions
+    LocationPermission permission = await checkLocationPermission();
+    if (permission == LocationPermission.denied) {
+      throw Exception('Location permissions are denied');
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      throw Exception(
+        'Location permissions are permanently denied, we cannot request permissions.',
+      );
+    }
+
+    try {
+      // Get current position with high accuracy
       Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
         timeLimit: const Duration(seconds: 15),
       );
 
+      if (kDebugMode) {
+        print(
+          '📍 Current location: ${position.latitude}, ${position.longitude}',
+        );
+        print('📍 Accuracy: ${position.accuracy}m');
+      }
+
       return position;
     } catch (e) {
-      Get.snackbar(
-        'Location Error',
-        'Failed to get current location: $e',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Get.theme.colorScheme.error,
-        colorText: Get.theme.colorScheme.onError,
-        duration: const Duration(seconds: 4),
-      );
-      return null;
-    }
-  }
-
-  static Stream<Position> getLocationStream() {
-    return Geolocator.getPositionStream(
-      locationSettings: const LocationSettings(
-        accuracy: LocationAccuracy.high,
-        distanceFilter: 10,
-        timeLimit: Duration(seconds: 10),
-      ),
-    );
-  }
-
-  static Future<String> getAddressFromCoordinates(
-    double lat,
-    double lng,
-  ) async {
-    try {
-      List<Placemark> placemarks = await placemarkFromCoordinates(lat, lng);
-      if (placemarks.isNotEmpty) {
-        Placemark place = placemarks[0];
-
-        // Build address string with available components
-        List<String> addressParts = [];
-
-        if (place.name != null && place.name!.isNotEmpty) {
-          addressParts.add(place.name!);
-        }
-        if (place.street != null && place.street!.isNotEmpty) {
-          addressParts.add(place.street!);
-        }
-        if (place.subLocality != null && place.subLocality!.isNotEmpty) {
-          addressParts.add(place.subLocality!);
-        }
-        if (place.locality != null && place.locality!.isNotEmpty) {
-          addressParts.add(place.locality!);
-        }
-        if (place.subAdministrativeArea != null &&
-            place.subAdministrativeArea!.isNotEmpty) {
-          addressParts.add(place.subAdministrativeArea!);
-        }
-
-        return addressParts.isNotEmpty
-            ? addressParts.join(', ')
-            : 'Lat: ${lat.toStringAsFixed(6)}, Lng: ${lng.toStringAsFixed(6)}';
+      if (kDebugMode) {
+        print('❌ Error getting current position: $e');
       }
-    } catch (e) {
-      print('Error getting address: $e');
+
+      // Fallback to last known position if available
+      try {
+        Position? lastKnownPosition = await Geolocator.getLastKnownPosition();
+        if (lastKnownPosition != null) {
+          if (kDebugMode) {
+            print(
+              '📍 Using last known position: ${lastKnownPosition.latitude}, ${lastKnownPosition.longitude}',
+            );
+          }
+          return lastKnownPosition;
+        }
+      } catch (lastKnownError) {
+        if (kDebugMode) {
+          print('❌ Error getting last known position: $lastKnownError');
+        }
+      }
+
+      rethrow;
     }
-    return 'Lat: ${lat.toStringAsFixed(6)}, Lng: ${lng.toStringAsFixed(6)}';
   }
 
-  static double getDistanceBetween(
+  /// Get position stream for real-time updates
+  Stream<Position> getPositionStream() {
+    const LocationSettings locationSettings = LocationSettings(
+      accuracy: LocationAccuracy.high,
+      distanceFilter: 5, // Update when moved 5 meters
+    );
+
+    return Geolocator.getPositionStream(locationSettings: locationSettings);
+  }
+
+  /// Calculate distance between two points in meters
+  double calculateDistance(
     double startLatitude,
     double startLongitude,
     double endLatitude,
@@ -186,8 +111,63 @@ class LocationService {
     );
   }
 
-  static Future<bool> isLocationAccurate(Position position) async {
-    // Check if the location accuracy is good enough (less than 20 meters)
-    return position.accuracy <= 20.0;
+  /// Calculate bearing between two points
+  double calculateBearing(
+    double startLatitude,
+    double startLongitude,
+    double endLatitude,
+    double endLongitude,
+  ) {
+    return Geolocator.bearingBetween(
+      startLatitude,
+      startLongitude,
+      endLatitude,
+      endLongitude,
+    );
+  }
+
+  /// Check if position is within radius of target location
+  bool isWithinRadius(
+    Position currentPosition,
+    double targetLatitude,
+    double targetLongitude,
+    double radiusInMeters,
+  ) {
+    double distance = calculateDistance(
+      currentPosition.latitude,
+      currentPosition.longitude,
+      targetLatitude,
+      targetLongitude,
+    );
+
+    return distance <= radiusInMeters;
+  }
+
+  /// Open location settings
+  Future<bool> openLocationSettings() async {
+    return await Geolocator.openLocationSettings();
+  }
+
+  /// Open app settings for location permissions
+  Future<bool> openAppSettings() async {
+    return await Geolocator.openAppSettings();
+  }
+
+  /// Get location accuracy description
+  String getAccuracyDescription(double accuracy) {
+    if (accuracy <= 5) {
+      return 'Excellent';
+    } else if (accuracy <= 10) {
+      return 'Good';
+    } else if (accuracy <= 20) {
+      return 'Fair';
+    } else {
+      return 'Poor';
+    }
+  }
+
+  /// Validate position accuracy for attendance
+  bool isAccuracyValid(Position position, {double requiredAccuracy = 20.0}) {
+    return position.accuracy <= requiredAccuracy;
   }
 }

@@ -1,4 +1,4 @@
-// lib/screens/widgets/daily_status_card.dart
+// lib/widgets/attendance/daily_statuscard_widget.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:geottandance/controllers/attendance_controller.dart';
@@ -7,84 +7,86 @@ import 'package:get/get.dart';
 class DailyStatusCard extends StatelessWidget {
   final AttendanceController controller;
 
-  const DailyStatusCard({Key? key, required this.controller}) : super(key: key);
+  const DailyStatusCard({super.key, required this.controller});
 
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      Color gradientStartColor;
-      Color gradientEndColor;
-      String mainText;
-      String subText;
-      IconData iconData;
-      String badgeText;
+      final status = controller.attendanceStatus;
+      final isWithinRadius = controller.isWithinRadius;
+      final distance = controller.distance;
+      final isWorkingDay = controller.isWorkingDay;
 
-      // if (!controller.hasClickedInToday) {
-      //   // Ready to clock in
-      //   gradientStartColor = const Color(0xFF10B981);
-      //   gradientEndColor = const Color(0xFF059669);
-      //   mainText = 'Ready to Start';
-      //   subText = 'Begin your productive day';
-      //   iconData = Icons.login_rounded;
-      //   badgeText = 'READY';
-      // } else if (controller.hasClickedInToday &&
-      //     !controller.hasClockedOutToday) {
-      //   // Currently working
-      //   gradientStartColor = const Color(0xFF667EEA);
-      //   gradientEndColor = const Color(0xFF764BA2);
-      //   mainText = 'Work Session Active';
-      //   subText = controller.isClockedIn
-      //       ? 'You are currently working'
-      //       : 'Ready to clock out';
-      //   iconData = Icons.work_rounded;
-      //   badgeText = 'ACTIVE';
-      // } else {
-      //   // Work completed for today
-      //   gradientStartColor = const Color(0xFF6B7280);
-      //   gradientEndColor = const Color(0xFF4B5563);
-      //   mainText = 'Work Completed';
-      //   subText = 'Great job today! See you tomorrow';
-      //   iconData = Icons.check_circle_rounded;
-      //   badgeText = 'DONE';
-      // }
+      Color cardColor;
+      IconData cardIcon;
+      String statusText;
+      String subtitleText;
+
+      // Priority: Working day status first
+      if (!isWorkingDay) {
+        cardColor = Colors.blue;
+        cardIcon = Icons.weekend_rounded;
+        statusText = 'Not a Working Day';
+        subtitleText = 'Attendance is not available today';
+      } else {
+        // Working day logic
+        switch (status) {
+          case AttendanceStatus.notStarted:
+            if (isWithinRadius) {
+              cardColor = const Color(0xFF10B981);
+              cardIcon = Icons.play_arrow_rounded;
+              statusText = 'Ready to Start';
+              subtitleText = 'You can begin your workday';
+            } else {
+              cardColor = const Color(0xFFEF4444);
+              cardIcon = Icons.location_off_rounded;
+              statusText = 'Outside Office Area';
+              subtitleText =
+                  'Move closer to office (${distance.toStringAsFixed(0)}m away)';
+            }
+            break;
+          case AttendanceStatus.clockedIn:
+            cardColor = const Color(0xFF667EEA);
+            cardIcon = Icons.work_rounded;
+            statusText = 'Working';
+            subtitleText = 'You are currently clocked in';
+            break;
+          case AttendanceStatus.completed:
+            cardColor = const Color(0xFF10B981);
+            cardIcon = Icons.check_circle_rounded;
+            statusText = 'Work Complete';
+            subtitleText = 'Great job today!';
+            break;
+        }
+      }
 
       return Container(
-        margin: EdgeInsets.symmetric(horizontal: 24.w),
-        padding: EdgeInsets.all(24.w),
+        margin: EdgeInsets.symmetric(horizontal: 24.w, vertical: 8.h),
+        padding: EdgeInsets.all(20.w),
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              // gradientStartColor,
-              // gradientEndColor,
-              // gradientEndColor.withOpacity(0.8),
-            ],
+            colors: [cardColor, cardColor.withOpacity(0.8)],
           ),
-          borderRadius: BorderRadius.circular(24.r),
+          borderRadius: BorderRadius.circular(20.r),
           boxShadow: [
-            // BoxShadow(
-            //   color: gradientStartColor.withOpacity(0.3),
-            //   blurRadius: 20.r,
-            //   offset: Offset(0, 8.h),
-            //   spreadRadius: 0,
-            // ),
+            BoxShadow(
+              color: cardColor.withOpacity(0.3),
+              blurRadius: 20.r,
+              offset: Offset(0, 8.h),
+            ),
           ],
         ),
         child: Row(
           children: [
             Container(
-              width: 64.w,
-              height: 64.h,
+              padding: EdgeInsets.all(12.w),
               decoration: BoxDecoration(
                 color: Colors.white.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(20.r),
-                border: Border.all(
-                  color: Colors.white.withOpacity(0.3),
-                  width: 1.w,
-                ),
+                borderRadius: BorderRadius.circular(16.r),
               ),
-              // child: Icon(iconData, size: 32.r, color: Colors.white),
+              child: Icon(cardIcon, color: Colors.white, size: 28.r),
             ),
             SizedBox(width: 16.w),
             Expanded(
@@ -92,19 +94,19 @@ class DailyStatusCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "mainText",
+                    statusText,
                     style: TextStyle(
                       fontSize: 18.sp,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w700,
                       color: Colors.white,
                       letterSpacing: -0.5,
                     ),
                   ),
-                  SizedBox(height: 6.h),
+                  SizedBox(height: 4.h),
                   Text(
-                    "subText",
+                    subtitleText,
                     style: TextStyle(
-                      fontSize: 12.sp,
+                      fontSize: 14.sp,
                       color: Colors.white.withOpacity(0.9),
                       fontWeight: FontWeight.w500,
                     ),
@@ -112,26 +114,29 @@ class DailyStatusCard extends StatelessWidget {
                 ],
               ),
             ),
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(12.r),
-                border: Border.all(
-                  color: Colors.white.withOpacity(0.3),
-                  width: 1.w,
+            if (isWorkingDay &&
+                status == AttendanceStatus.notStarted &&
+                isWithinRadius)
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(20.r),
+                  border: Border.all(
+                    color: Colors.white.withOpacity(0.3),
+                    width: 1,
+                  ),
+                ),
+                child: Text(
+                  'READY',
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                    letterSpacing: 1,
+                  ),
                 ),
               ),
-              child: Text(
-                "badgeText",
-                style: TextStyle(
-                  fontSize: 12.sp,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
-                  letterSpacing: 0.5,
-                ),
-              ),
-            ),
           ],
         ),
       );

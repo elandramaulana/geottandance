@@ -1,18 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:geottandance/controllers/login_controller.dart';
+import 'package:geottandance/controllers/auth_controller.dart';
 import 'package:geottandance/core/app_config.dart';
+import 'package:geottandance/core/app_routes.dart';
 import 'package:get/get.dart';
 
-class LoginScreen extends GetView<LoginController> {
-  const LoginScreen({super.key});
+class AuthScreen extends GetView<AuthController> {
+  const AuthScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    // Check if user is already logged in and navigate automatically
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkLoginStatus();
+    });
+
+    // Create form key for validation
+    final formKey = GlobalKey<FormState>();
+
+    // Create text controllers
+    final emailController = TextEditingController();
+    final passwordController = TextEditingController();
+    final RxBool isPasswordHidden = true.obs;
+
     return Scaffold(
       body: Stack(
         children: [
+          // Background gradient
           Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
@@ -27,6 +42,8 @@ class LoginScreen extends GetView<LoginController> {
               ),
             ),
           ),
+
+          // Floating circles
           _buildFloatingCircle(
             top: -80,
             left: -60,
@@ -67,7 +84,11 @@ class LoginScreen extends GetView<LoginController> {
             opacity: 0.25,
             duration: 3000,
           ),
+
+          // Dots pattern
           _buildDotsPattern(),
+
+          // Version info at bottom
           Positioned(
             bottom: 30.h,
             left: 0,
@@ -119,124 +140,286 @@ class LoginScreen extends GetView<LoginController> {
               },
             ),
           ),
+
+          // Main login content
           Center(
             child: SingleChildScrollView(
               child: Padding(
                 padding: EdgeInsets.all(25.w),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    SvgPicture.asset(
-                      'assets/svgs/time.svg',
-                      width: 200.w,
-                      height: 200.h,
-                    ),
-                    Text(
-                      'Login to Your Account',
-                      style: TextStyle(
-                        fontSize: 24.sp,
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFF1C5B41),
+                child: Form(
+                  key: formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Logo
+                      SvgPicture.asset(
+                        'assets/svgs/time.svg',
+                        width: 200.w,
+                        height: 200.h,
                       ),
-                    ),
-                    SizedBox(height: 20.h),
-                    TextField(
-                      controller: controller.emailController,
-                      decoration: _inputDecoration('Email', Icons.email),
-                    ),
-                    SizedBox(height: 20.h),
-                    TextField(
-                      controller: controller.passwordController,
-                      obscureText: true,
-                      decoration: _inputDecoration('Password', Icons.lock),
-                    ),
-                    SizedBox(height: 20.h),
-                    Obx(() {
-                      return SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: controller.isLoading.value
-                              ? null
-                              : () => controller.login(),
-                          style: ElevatedButton.styleFrom(
-                            padding: EdgeInsets.symmetric(vertical: 15.h),
-                            backgroundColor: const Color(0xFF184B1A),
-                            shape: RoundedRectangleBorder(
+
+                      // Title
+                      Text(
+                        'Login to Your Account',
+                        style: TextStyle(
+                          fontSize: 24.sp,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF1C5B41),
+                        ),
+                      ),
+
+                      SizedBox(height: 20.h),
+
+                      // Error Message Display
+                      Obx(() {
+                        if (controller.hasError) {
+                          return Container(
+                            width: double.infinity,
+                            margin: EdgeInsets.only(bottom: 15.h),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 16.w,
+                              vertical: 12.h,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.red.shade50,
                               borderRadius: BorderRadius.circular(12.r),
+                              border: Border.all(color: Colors.red.shade200),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.error_outline,
+                                  color: Colors.red.shade600,
+                                  size: 20.sp,
+                                ),
+                                SizedBox(width: 8.w),
+                                Expanded(
+                                  child: Text(
+                                    controller.errorMessage.value,
+                                    style: TextStyle(
+                                      fontSize: 14.sp,
+                                      color: Colors.red.shade700,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }
+                        return const SizedBox.shrink();
+                      }),
+
+                      // Success Message Display
+                      Obx(() {
+                        if (controller.hasSuccessMessage) {
+                          return Container(
+                            width: double.infinity,
+                            margin: EdgeInsets.only(bottom: 15.h),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 16.w,
+                              vertical: 12.h,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.green.shade50,
+                              borderRadius: BorderRadius.circular(12.r),
+                              border: Border.all(color: Colors.green.shade200),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.check_circle_outline,
+                                  color: Colors.green.shade600,
+                                  size: 20.sp,
+                                ),
+                                SizedBox(width: 8.w),
+                                Expanded(
+                                  child: Text(
+                                    controller.successMessage.value,
+                                    style: TextStyle(
+                                      fontSize: 14.sp,
+                                      color: Colors.green.shade700,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }
+                        return const SizedBox.shrink();
+                      }),
+
+                      // Email Field
+                      TextFormField(
+                        controller: emailController,
+                        keyboardType: TextInputType.emailAddress,
+                        textInputAction: TextInputAction.next,
+                        decoration: _inputDecoration('Email', Icons.email),
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Email wajib diisi';
+                          }
+                          if (!GetUtils.isEmail(value.trim())) {
+                            return 'Format email tidak valid';
+                          }
+                          return null;
+                        },
+                        onChanged: (value) {
+                          if (controller.hasError) {
+                            controller.clearMessages();
+                          }
+                        },
+                      ),
+
+                      SizedBox(height: 20.h),
+
+                      // Password Field
+                      Obx(() {
+                        return TextFormField(
+                          controller: passwordController,
+                          obscureText: isPasswordHidden.value,
+                          textInputAction: TextInputAction.done,
+                          decoration: _inputDecoration(
+                            'Password',
+                            Icons.lock,
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                isPasswordHidden.value
+                                    ? Icons.visibility_off
+                                    : Icons.visibility,
+                                color: const Color(0xFF1C5B41),
+                              ),
+                              onPressed: () {
+                                isPasswordHidden.toggle();
+                              },
                             ),
                           ),
-                          child: controller.isLoading.value
-                              ? SizedBox(
-                                  width: 24.w,
-                                  height: 24.w,
-                                  child: const CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: Colors.white,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Password wajib diisi';
+                            }
+                            if (value.length < 6) {
+                              return 'Password minimal 6 karakter';
+                            }
+                            return null;
+                          },
+                          onFieldSubmitted: (value) {
+                            if (!controller.isLoading.value) {
+                              _handleLogin(
+                                formKey,
+                                emailController,
+                                passwordController,
+                              );
+                            }
+                          },
+                          onChanged: (value) {
+                            if (controller.hasError) {
+                              controller.clearMessages();
+                            }
+                          },
+                        );
+                      }),
+
+                      SizedBox(height: 20.h),
+
+                      // Login Button
+                      Obx(() {
+                        return SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: controller.isLoading.value
+                                ? null
+                                : () => _handleLogin(
+                                    formKey,
+                                    emailController,
+                                    passwordController,
                                   ),
-                                )
-                              : Text(
-                                  'Login',
-                                  style: TextStyle(
-                                    fontSize: 18.sp,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                        ),
-                      );
-                    }),
-                    // SizedBox(height: 5.h),
-                    Container(
-                      margin: EdgeInsets.only(top: 10.h, bottom: 20.h),
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 16.w,
-                        vertical: 12.h,
-                      ),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFFFEF7).withOpacity(0.9),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: const Color(0xFFD4E6D4)),
-                      ),
-                      child: Column(
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                'Don\'t have an account? ',
-                                style: TextStyle(
-                                  fontSize: 14.sp,
-                                  color: const Color(0xFF2E7D32),
-                                ),
+                            style: ElevatedButton.styleFrom(
+                              padding: EdgeInsets.symmetric(vertical: 15.h),
+                              backgroundColor: const Color(0xFF184B1A),
+                              disabledBackgroundColor: const Color(
+                                0xFF184B1A,
+                              ).withOpacity(0.6),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12.r),
                               ),
-                              GestureDetector(
-                                onTap: () => Get.toNamed('/register'),
-                                child: Text(
-                                  'Register',
+                              elevation: 2,
+                            ),
+                            child: controller.isLoading.value
+                                ? SizedBox(
+                                    width: 24.w,
+                                    height: 24.w,
+                                    child: const CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : Text(
+                                    'Login',
+                                    style: TextStyle(
+                                      fontSize: 18.sp,
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                          ),
+                        );
+                      }),
+
+                      // Register and Forgot Password Links
+                      Container(
+                        margin: EdgeInsets.only(top: 10.h, bottom: 20.h),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 16.w,
+                          vertical: 12.h,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFFEF7).withOpacity(0.9),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: const Color(0xFFD4E6D4)),
+                        ),
+                        child: Column(
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  'Don\'t have an account? ',
                                   style: TextStyle(
                                     fontSize: 14.sp,
-                                    color: const Color(0xFF388E3C),
-                                    fontWeight: FontWeight.bold,
+                                    color: const Color(0xFF2E7D32),
                                   ),
                                 ),
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 6.h),
-                          GestureDetector(
-                            onTap: () => Get.toNamed('/forgotPassword'),
-                            child: Text(
-                              'Forgot Password?',
-                              style: TextStyle(
-                                fontSize: 14.sp,
-                                color: const Color(0xFF388E3C),
-                                fontWeight: FontWeight.bold,
+                                GestureDetector(
+                                  onTap: () => Get.toNamed(AppRoutes.register),
+                                  child: Text(
+                                    'Register',
+                                    style: TextStyle(
+                                      fontSize: 14.sp,
+                                      color: const Color(0xFF388E3C),
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 6.h),
+                            GestureDetector(
+                              onTap: () =>
+                                  Get.toNamed(AppRoutes.forgotPassword),
+                              child: Text(
+                                'Forgot Password?',
+                                style: TextStyle(
+                                  fontSize: 14.sp,
+                                  color: const Color(0xFF388E3C),
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -244,6 +427,31 @@ class LoginScreen extends GetView<LoginController> {
         ],
       ),
     );
+  }
+
+  // ========== HELPER METHODS ==========
+
+  /// Check login status when screen loads
+  Future<void> _checkLoginStatus() async {
+    try {
+      // Wait a bit to ensure controller is fully initialized
+      await Future.delayed(const Duration(milliseconds: 100));
+
+      // Check if user is already logged in
+      if (controller.isLoggedIn.value) {
+        // Navigate to home if already logged in
+        Get.offAllNamed(AppRoutes.bottomNav);
+        return;
+      }
+
+      // If not logged in from memory, check with service
+      final isLoggedIn = await controller.validateSession();
+      if (isLoggedIn && controller.isLoggedIn.value) {
+        Get.offAllNamed(AppRoutes.bottomNav);
+      }
+    } catch (e) {
+      print('❌ AuthScreen: Error checking login status - $e');
+    }
   }
 
   Widget _buildFloatingCircle({
@@ -274,19 +482,73 @@ class LoginScreen extends GetView<LoginController> {
     return Positioned.fill(child: CustomPaint(painter: DotPatternPainter()));
   }
 
-  InputDecoration _inputDecoration(String label, IconData icon) {
+  InputDecoration _inputDecoration(
+    String label,
+    IconData icon, {
+    Widget? suffixIcon,
+  }) {
     return InputDecoration(
       labelText: label,
-      prefixIcon: Icon(icon, color: Colors.blueGrey),
+      prefixIcon: Icon(icon, color: const Color(0xFF1C5B41)),
+      suffixIcon: suffixIcon,
+      labelStyle: TextStyle(color: const Color(0xFF1C5B41), fontSize: 16.sp),
       filled: true,
-      fillColor: Colors.white,
+      fillColor: Colors.white.withOpacity(0.9),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12.r),
-        borderSide: BorderSide.none,
+        borderSide: const BorderSide(color: Color(0xFFD4E6D4), width: 1.5),
       ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12.r),
+        borderSide: const BorderSide(color: Color(0xFFD4E6D4), width: 1.5),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12.r),
+        borderSide: const BorderSide(color: Color(0xFF1C5B41), width: 2),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12.r),
+        borderSide: BorderSide(color: Colors.red.shade400, width: 1.5),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12.r),
+        borderSide: BorderSide(color: Colors.red.shade600, width: 2),
+      ),
+      contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
     );
   }
+
+  Future<void> _handleLogin(
+    GlobalKey<FormState> formKey,
+    TextEditingController emailController,
+    TextEditingController passwordController,
+  ) async {
+    // Dismiss keyboard
+    FocusScope.of(Get.context!).unfocus();
+
+    // Validate form
+    if (!formKey.currentState!.validate()) {
+      return;
+    }
+
+    // Perform login using the controller
+    final success = await controller.login(
+      email: emailController.text.trim(),
+      password: passwordController.text,
+    );
+
+    if (success) {
+      // Clear form
+      emailController.clear();
+      passwordController.clear();
+
+      // Navigate to home
+      Get.offAllNamed(AppRoutes.bottomNav);
+    }
+  }
 }
+
+// ========== FLOATING CIRCLE WIDGET ==========
 
 class _FloatingCircleWidget extends StatefulWidget {
   final double size;
@@ -359,6 +621,8 @@ class _FloatingCircleWidgetState extends State<_FloatingCircleWidget>
     );
   }
 }
+
+// ========== DOT PATTERN PAINTER ==========
 
 class DotPatternPainter extends CustomPainter {
   @override

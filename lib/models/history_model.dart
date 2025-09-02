@@ -1,215 +1,218 @@
-// lib/models/history_model.dart
-class HistoryModel {
-  final DateTime date;
-  final String checkIn;
-  final String checkOut;
-  final String category;
-  final String locationIn;
-  final String locationOut;
-  final double? latitudeIn;
-  final double? longitudeIn;
-  final double? latitudeOut;
-  final double? longitudeOut;
+// models/attendance_history_model.dart
+class AttendanceHistoryResponse {
+  final bool success;
+  final String message;
+  final AttendanceHistoryData? data;
 
-  HistoryModel({
-    required this.date,
-    required this.checkIn,
-    required this.checkOut,
-    required this.category,
-    required this.locationIn,
-    required this.locationOut,
-    this.latitudeIn,
-    this.longitudeIn,
-    this.latitudeOut,
-    this.longitudeOut,
+  AttendanceHistoryResponse({
+    required this.success,
+    required this.message,
+    this.data,
   });
 
-  /// Get work duration if both check in and check out are available
-  Duration? get workDuration {
-    if (checkIn == '-' || checkOut == '-') return null;
-
-    try {
-      final checkInTime = _parseTimeString(checkIn);
-      final checkOutTime = _parseTimeString(checkOut);
-
-      if (checkInTime != null && checkOutTime != null) {
-        final checkInDateTime = DateTime(
-          date.year,
-          date.month,
-          date.day,
-          checkInTime.hour,
-          checkInTime.minute,
-        );
-        final checkOutDateTime = DateTime(
-          date.year,
-          date.month,
-          date.day,
-          checkOutTime.hour,
-          checkOutTime.minute,
-        );
-
-        return checkOutDateTime.difference(checkInDateTime);
-      }
-    } catch (e) {
-      // Handle parsing errors
-      return null;
-    }
-
-    return null;
-  }
-
-  /// Get formatted work duration string
-  String get workDurationFormatted {
-    final duration = workDuration;
-    if (duration == null) return '-';
-
-    final hours = duration.inHours;
-    final minutes = duration.inMinutes.remainder(60);
-
-    if (hours > 0) {
-      return '${hours}h ${minutes}m';
-    } else {
-      return '${minutes}m';
-    }
-  }
-
-  /// Check if the attendance is complete (has both check in and check out)
-  bool get isComplete => checkIn != '-' && checkOut != '-';
-
-  /// Check if the person was late
-  bool get isLate => category == 'Late';
-
-  /// Check if the person was absent
-  bool get isAbsent => category == 'Absent';
-
-  /// Check if the attendance is incomplete (has check in but no check out)
-  bool get isIncomplete => category == 'Incomplete';
-
-  /// Parse time string (HH:MM AM/PM) to DateTime
-  DateTime? _parseTimeString(String timeString) {
-    try {
-      final parts = timeString.split(' ');
-      if (parts.length != 2) return null;
-
-      final timePart = parts[0];
-      final period = parts[1];
-
-      final timeParts = timePart.split(':');
-      if (timeParts.length != 2) return null;
-
-      int hour = int.parse(timeParts[0]);
-      final minute = int.parse(timeParts[1]);
-
-      if (period.toUpperCase() == 'PM' && hour != 12) {
-        hour += 12;
-      } else if (period.toUpperCase() == 'AM' && hour == 12) {
-        hour = 0;
-      }
-
-      return DateTime(
-        2000,
-        1,
-        1,
-        hour,
-        minute,
-      ); // Use dummy date for time calculation
-    } catch (e) {
-      return null;
-    }
-  }
-
-  /// Create copy with modified fields
-  HistoryModel copyWith({
-    DateTime? date,
-    String? checkIn,
-    String? checkOut,
-    String? category,
-    String? locationIn,
-    String? locationOut,
-    double? latitudeIn,
-    double? longitudeIn,
-    double? latitudeOut,
-    double? longitudeOut,
-  }) {
-    return HistoryModel(
-      date: date ?? this.date,
-      checkIn: checkIn ?? this.checkIn,
-      checkOut: checkOut ?? this.checkOut,
-      category: category ?? this.category,
-      locationIn: locationIn ?? this.locationIn,
-      locationOut: locationOut ?? this.locationOut,
-      latitudeIn: latitudeIn ?? this.latitudeIn,
-      longitudeIn: longitudeIn ?? this.longitudeIn,
-      latitudeOut: latitudeOut ?? this.latitudeOut,
-      longitudeOut: longitudeOut ?? this.longitudeOut,
+  factory AttendanceHistoryResponse.fromJson(Map<String, dynamic> json) {
+    return AttendanceHistoryResponse(
+      success: json['success'] ?? false,
+      message: json['message'] ?? '',
+      data: json['data'] != null
+          ? AttendanceHistoryData.fromJson(json['data'])
+          : null,
     );
   }
 
-  /// Convert to map for serialization
-  Map<String, dynamic> toMap() {
+  Map<String, dynamic> toJson() {
+    return {'success': success, 'message': message, 'data': data?.toJson()};
+  }
+}
+
+class AttendanceHistoryData {
+  final List<AttendanceHistory> attendances;
+  final PaginationInfo pagination;
+
+  AttendanceHistoryData({required this.attendances, required this.pagination});
+
+  factory AttendanceHistoryData.fromJson(Map<String, dynamic> json) {
+    return AttendanceHistoryData(
+      attendances:
+          (json['attendances'] as List<dynamic>?)
+              ?.map((item) => AttendanceHistory.fromJson(item))
+              .toList() ??
+          [],
+      pagination: PaginationInfo.fromJson(json['pagination'] ?? {}),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
     return {
-      'date': date.millisecondsSinceEpoch,
-      'checkIn': checkIn,
-      'checkOut': checkOut,
-      'category': category,
-      'locationIn': locationIn,
-      'locationOut': locationOut,
-      'latitudeIn': latitudeIn,
-      'longitudeIn': longitudeIn,
-      'latitudeOut': latitudeOut,
-      'longitudeOut': longitudeOut,
+      'attendances': attendances.map((item) => item.toJson()).toList(),
+      'pagination': pagination.toJson(),
+    };
+  }
+}
+
+class AttendanceHistory {
+  final int id;
+  final String date;
+  final String dayName;
+  final String? clockIn;
+  final String? clockOut;
+  final String status;
+  final String statusLabel;
+  final int workDurationMinutes;
+  final double workDurationHours;
+  final int overtimeDurationMinutes;
+  final double overtimeDurationHours;
+  final Office office;
+  final String? notes;
+
+  AttendanceHistory({
+    required this.id,
+    required this.date,
+    required this.dayName,
+    this.clockIn,
+    this.clockOut,
+    required this.status,
+    required this.statusLabel,
+    required this.workDurationMinutes,
+    required this.workDurationHours,
+    required this.overtimeDurationMinutes,
+    required this.overtimeDurationHours,
+    required this.office,
+    this.notes,
+  });
+
+  factory AttendanceHistory.fromJson(Map<String, dynamic> json) {
+    return AttendanceHistory(
+      id: json['id'] ?? 0,
+      date: json['date'] ?? '',
+      dayName: json['day_name'] ?? '',
+      clockIn: json['clock_in'],
+      clockOut: json['clock_out'],
+      status: json['status'] ?? '',
+      statusLabel: json['status_label'] ?? '',
+      workDurationMinutes: json['work_duration_minutes'] ?? 0,
+      workDurationHours: (json['work_duration_hours'] ?? 0).toDouble(),
+      overtimeDurationMinutes: json['overtime_duration_minutes'] ?? 0,
+      overtimeDurationHours: (json['overtime_duration_hours'] ?? 0).toDouble(),
+      office: Office.fromJson(json['office'] ?? {}),
+      notes: json['notes'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'date': date,
+      'day_name': dayName,
+      'clock_in': clockIn,
+      'clock_out': clockOut,
+      'status': status,
+      'status_label': statusLabel,
+      'work_duration_minutes': workDurationMinutes,
+      'work_duration_hours': workDurationHours,
+      'overtime_duration_minutes': overtimeDurationMinutes,
+      'overtime_duration_hours': overtimeDurationHours,
+      'office': office.toJson(),
+      'notes': notes,
     };
   }
 
-  /// Create from map for deserialization
-  factory HistoryModel.fromMap(Map<String, dynamic> map) {
-    return HistoryModel(
-      date: DateTime.fromMillisecondsSinceEpoch(map['date']),
-      checkIn: map['checkIn'] ?? '-',
-      checkOut: map['checkOut'] ?? '-',
-      category: map['category'] ?? 'Unknown',
-      locationIn: map['locationIn'] ?? '-',
-      locationOut: map['locationOut'] ?? '-',
-      latitudeIn: map['latitudeIn']?.toDouble(),
-      longitudeIn: map['longitudeIn']?.toDouble(),
-      latitudeOut: map['latitudeOut']?.toDouble(),
-      longitudeOut: map['longitudeOut']?.toDouble(),
-    );
+  // Helper methods
+  bool get isPresent => status == 'present';
+  bool get isLate => status == 'late';
+  bool get isAbsent => status == 'absent';
+
+  bool get hasClockedIn => clockIn != null && clockIn!.isNotEmpty;
+  bool get hasClockedOut => clockOut != null && clockOut!.isNotEmpty;
+
+  bool get hasOvertime => overtimeDurationMinutes > 0;
+
+  String get formattedWorkDuration {
+    final hours = workDurationMinutes ~/ 60;
+    final minutes = workDurationMinutes % 60;
+    return '${hours}j ${minutes}m';
+  }
+
+  String get formattedOvertimeDuration {
+    if (overtimeDurationMinutes == 0) return '0j 0m';
+    final hours = overtimeDurationMinutes ~/ 60;
+    final minutes = overtimeDurationMinutes % 60;
+    return '${hours}j ${minutes}m';
   }
 
   @override
   String toString() {
-    return 'HistoryModel(date: $date, checkIn: $checkIn, checkOut: $checkOut, category: $category)';
+    return 'AttendanceHistory{id: $id, date: $date, status: $status, clockIn: $clockIn, clockOut: $clockOut}';
+  }
+}
+
+class Office {
+  final int id;
+  final String name;
+
+  Office({required this.id, required this.name});
+
+  factory Office.fromJson(Map<String, dynamic> json) {
+    return Office(id: json['id'] ?? 0, name: json['name'] ?? '');
+  }
+
+  Map<String, dynamic> toJson() {
+    return {'id': id, 'name': name};
   }
 
   @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
+  String toString() {
+    return 'Office{id: $id, name: $name}';
+  }
+}
 
-    return other is HistoryModel &&
-        other.date == date &&
-        other.checkIn == checkIn &&
-        other.checkOut == checkOut &&
-        other.category == category &&
-        other.locationIn == locationIn &&
-        other.locationOut == locationOut &&
-        other.latitudeIn == latitudeIn &&
-        other.longitudeIn == longitudeIn &&
-        other.latitudeOut == latitudeOut &&
-        other.longitudeOut == longitudeOut;
+class PaginationInfo {
+  final int currentPage;
+  final int lastPage;
+  final int perPage;
+  final int total;
+  final int from;
+  final int to;
+
+  PaginationInfo({
+    required this.currentPage,
+    required this.lastPage,
+    required this.perPage,
+    required this.total,
+    required this.from,
+    required this.to,
+  });
+
+  factory PaginationInfo.fromJson(Map<String, dynamic> json) {
+    return PaginationInfo(
+      currentPage: json['current_page'] ?? 1,
+      lastPage: json['last_page'] ?? 1,
+      perPage: json['per_page'] ?? 15,
+      total: json['total'] ?? 0,
+      from: json['from'] ?? 0,
+      to: json['to'] ?? 0,
+    );
   }
 
+  Map<String, dynamic> toJson() {
+    return {
+      'current_page': currentPage,
+      'last_page': lastPage,
+      'per_page': perPage,
+      'total': total,
+      'from': from,
+      'to': to,
+    };
+  }
+
+  // Helper methods
+  bool get hasNextPage => currentPage < lastPage;
+  bool get hasPreviousPage => currentPage > 1;
+  bool get isFirstPage => currentPage == 1;
+  bool get isLastPage => currentPage == lastPage;
+
   @override
-  int get hashCode {
-    return date.hashCode ^
-        checkIn.hashCode ^
-        checkOut.hashCode ^
-        category.hashCode ^
-        locationIn.hashCode ^
-        locationOut.hashCode ^
-        latitudeIn.hashCode ^
-        longitudeIn.hashCode ^
-        latitudeOut.hashCode ^
-        longitudeOut.hashCode;
+  String toString() {
+    return 'PaginationInfo{currentPage: $currentPage, total: $total, perPage: $perPage}';
   }
 }

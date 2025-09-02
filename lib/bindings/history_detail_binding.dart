@@ -1,13 +1,9 @@
 import 'package:get/get.dart';
-import 'package:geottandance/controllers/history_controller.dart';
 import 'package:geottandance/controllers/history_detail_controller.dart';
 
-class HistoryBinding extends Bindings {
+class HistoryDetailBinding extends Bindings {
   @override
   void dependencies() {
-    Get.lazyPut<AttendanceHistoryController>(
-      () => AttendanceHistoryController(),
-    );
     Get.lazyPut<AttendanceDetailController>(() => AttendanceDetailController());
   }
 }

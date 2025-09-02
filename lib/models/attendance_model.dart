@@ -1,58 +1,114 @@
 // lib/models/attendance_model.dart
-class AttendanceRecord {
+class AttendanceModel {
   final int? id;
-  final DateTime timestamp;
-  final double latitude;
-  final double longitude;
-  final String type; // 'clock_in' or 'clock_out'
-  final String? address;
+  final String? clockInTime;
+  final String? clockOutTime;
+  final String? workDuration;
+  final String? status;
+  final bool isLate;
+  final double? clockInLatitude;
+  final double? clockInLongitude;
+  final double? clockOutLatitude;
+  final double? clockOutLongitude;
+  final String? clockInAddress;
+  final String? clockOutAddress;
+  final DateTime? date;
 
-  AttendanceRecord({
+  AttendanceModel({
     this.id,
-    required this.timestamp,
-    required this.latitude,
-    required this.longitude,
-    required this.type,
-    this.address,
+    this.clockInTime,
+    this.clockOutTime,
+    this.workDuration,
+    this.status,
+    this.isLate = false,
+    this.clockInLatitude,
+    this.clockInLongitude,
+    this.clockOutLatitude,
+    this.clockOutLongitude,
+    this.clockInAddress,
+    this.clockOutAddress,
+    this.date,
   });
 
-  Map<String, dynamic> toMap() {
+  factory AttendanceModel.fromJson(Map<String, dynamic> json) {
+    return AttendanceModel(
+      id: json['id'],
+      clockInTime: json['clock_in_time'],
+      clockOutTime: json['clock_out_time'],
+      workDuration: json['work_duration'],
+      status: json['status'],
+      isLate: json['is_late'] ?? false,
+      clockInLatitude: json['clock_in_latitude']?.toDouble(),
+      clockInLongitude: json['clock_in_longitude']?.toDouble(),
+      clockOutLatitude: json['clock_out_latitude']?.toDouble(),
+      clockOutLongitude: json['clock_out_longitude']?.toDouble(),
+      clockInAddress: json['clock_in_address'],
+      clockOutAddress: json['clock_out_address'],
+      date: json['date'] != null ? DateTime.parse(json['date']) : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'timestamp': timestamp.millisecondsSinceEpoch,
-      'latitude': latitude,
-      'longitude': longitude,
-      'type': type,
-      'address': address,
+      'clock_in_time': clockInTime,
+      'clock_out_time': clockOutTime,
+      'work_duration': workDuration,
+      'status': status,
+      'is_late': isLate,
+      'clock_in_latitude': clockInLatitude,
+      'clock_in_longitude': clockInLongitude,
+      'clock_out_latitude': clockOutLatitude,
+      'clock_out_longitude': clockOutLongitude,
+      'clock_in_address': clockInAddress,
+      'clock_out_address': clockOutAddress,
+      'date': date?.toIso8601String(),
     };
   }
 
-  factory AttendanceRecord.fromMap(Map<String, dynamic> map) {
-    return AttendanceRecord(
-      id: map['id'],
-      timestamp: DateTime.fromMillisecondsSinceEpoch(map['timestamp']),
-      latitude: map['latitude'],
-      longitude: map['longitude'],
-      type: map['type'],
-      address: map['address'],
+  AttendanceModel copyWith({
+    int? id,
+    String? clockInTime,
+    String? clockOutTime,
+    String? workDuration,
+    String? status,
+    bool? isLate,
+    double? clockInLatitude,
+    double? clockInLongitude,
+    double? clockOutLatitude,
+    double? clockOutLongitude,
+    String? clockInAddress,
+    String? clockOutAddress,
+    DateTime? date,
+  }) {
+    return AttendanceModel(
+      id: id ?? this.id,
+      clockInTime: clockInTime ?? this.clockInTime,
+      clockOutTime: clockOutTime ?? this.clockOutTime,
+      workDuration: workDuration ?? this.workDuration,
+      status: status ?? this.status,
+      isLate: isLate ?? this.isLate,
+      clockInLatitude: clockInLatitude ?? this.clockInLatitude,
+      clockInLongitude: clockInLongitude ?? this.clockInLongitude,
+      clockOutLatitude: clockOutLatitude ?? this.clockOutLatitude,
+      clockOutLongitude: clockOutLongitude ?? this.clockOutLongitude,
+      clockInAddress: clockInAddress ?? this.clockInAddress,
+      clockOutAddress: clockOutAddress ?? this.clockOutAddress,
+      date: date ?? this.date,
     );
   }
 
-  AttendanceRecord copyWith({
-    int? id,
-    DateTime? timestamp,
-    double? latitude,
-    double? longitude,
-    String? type,
-    String? address,
-  }) {
-    return AttendanceRecord(
-      id: id ?? this.id,
-      timestamp: timestamp ?? this.timestamp,
-      latitude: latitude ?? this.latitude,
-      longitude: longitude ?? this.longitude,
-      type: type ?? this.type,
-      address: address ?? this.address,
-    );
+  @override
+  String toString() {
+    return 'AttendanceModel{id: $id, clockInTime: $clockInTime, clockOutTime: $clockOutTime, status: $status, isLate: $isLate}';
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is AttendanceModel && other.id == id;
+  }
+
+  @override
+  int get hashCode => id.hashCode;
 }

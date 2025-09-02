@@ -1,21 +1,24 @@
-// lib/screens/widgets/attendance_bottom_sheet.dart
+// lib/widgets/attendance/attendance_bottom_sheet_widget.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:geottandance/controllers/attendance_controller.dart';
-import 'package:geottandance/widgets/attendance/action_button_widget.dart';
-import 'package:geottandance/widgets/attendance/currenttime_display_widget.dart';
+import 'package:geottandance/widgets/attendance/action_button_widget.dart'
+    as action_buttons;
+import 'package:geottandance/widgets/attendance/currenttime_display_widget.dart'
+    as current_time_display;
 import 'package:geottandance/widgets/attendance/daily_statuscard_widget.dart';
-import 'package:geottandance/widgets/attendance/today_summary_widget.dart';
+import 'package:geottandance/widgets/attendance/today_summary_widget.dart'
+    as today_summary;
 
 class AttendanceBottomSheet extends StatelessWidget {
   final AttendanceController controller;
   final String currentTime;
 
   const AttendanceBottomSheet({
-    Key? key,
+    super.key,
     required this.controller,
     required this.currentTime,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +36,7 @@ class AttendanceBottomSheet extends StatelessWidget {
             ),
             boxShadow: [
               BoxShadow(
-                color: Color(0x15000000),
+                color: const Color(0x15000000),
                 blurRadius: 30.r,
                 offset: Offset(0, -8.h),
                 spreadRadius: 0,
@@ -47,10 +50,12 @@ class AttendanceBottomSheet extends StatelessWidget {
               children: [
                 _buildModernHandle(),
                 DailyStatusCard(controller: controller),
-                CurrentTimeDisplay(currentTime: currentTime),
-                TodaysSummaryCard(controller: controller),
+                current_time_display.CurrentTimeDisplay(
+                  currentTime: currentTime,
+                ),
+                today_summary.TodaysSummaryCard(controller: controller),
                 SizedBox(height: 20.h),
-                // ActionButtons(controller: controller),
+                action_buttons.ActionButtons(controller: controller),
                 SizedBox(height: 32.h),
               ],
             ),

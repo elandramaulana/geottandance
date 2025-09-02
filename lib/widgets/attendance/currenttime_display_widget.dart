@@ -5,8 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 class CurrentTimeDisplay extends StatelessWidget {
   final String currentTime;
 
-  const CurrentTimeDisplay({Key? key, required this.currentTime})
-    : super(key: key);
+  const CurrentTimeDisplay({super.key, required this.currentTime});
 
   @override
   Widget build(BuildContext context) {

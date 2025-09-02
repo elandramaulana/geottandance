@@ -1,4 +1,3 @@
-import 'package:geottandance/bindings/atendance_binding.dart';
 import 'package:geottandance/bindings/forgot_password_binding.dart';
 import 'package:geottandance/bindings/home_binding.dart';
 import 'package:geottandance/bindings/login_binding.dart';
@@ -7,7 +6,6 @@ import 'package:geottandance/bindings/register_binding.dart';
 import 'package:geottandance/bindings/history_binding.dart';
 import 'package:geottandance/controllers/splash_controller.dart';
 import 'package:geottandance/core/app_routes.dart';
-import 'package:geottandance/pages/attendance/attendance_page.dart';
 import 'package:geottandance/pages/auth/forgot_password_screen.dart';
 import 'package:geottandance/pages/auth/login_screen.dart';
 import 'package:geottandance/pages/auth/register_screen.dart';
@@ -16,6 +14,11 @@ import 'package:geottandance/pages/navigation/main_navbar.dart';
 import 'package:geottandance/pages/splash/splashscreen.dart';
 import 'package:geottandance/pages/history/history_detail_screen.dart';
 import 'package:geottandance/pages/history/history_screen.dart';
+import 'package:geottandance/pages/profile/profile_screen.dart';
+import 'package:geottandance/bindings/profile_binding.dart';
+import 'package:geottandance/bindings/history_detail_binding.dart';
+import 'package:geottandance/bindings/attendance_binding.dart';
+import 'package:geottandance/pages/attendance/attendance_screen.dart';
 import 'package:get/get.dart';
 
 class AppPages {
@@ -34,12 +37,14 @@ class AppPages {
       bindings: [
         NavigationBinding(),
         HomeBinding(), // ✅ jika HomeController butuh
-        HistoryBinding(), // ✅ ini penting
+        HistoryBinding(),
+        ProfileBinding(),
+        AttendanceBinding(), // ✅ ini penting
       ],
     ),
     GetPage(
       name: AppRoutes.login,
-      page: () => LoginScreen(),
+      page: () => AuthScreen(),
       binding: LoginBinding(),
     ),
 
@@ -69,14 +74,20 @@ class AppPages {
     GetPage(
       name: AppRoutes.historyDetail,
       page: () => HistoryDetailScreen(),
-      binding: HistoryBinding(), // Same binding as history screen
+      binding: HistoryDetailBinding(), // Same binding as history screen
     ),
 
-    // GetPage(
-    //   name: AppRoutes.attendance,
-    //   page: () => AttendanceScreen(),
-    //   binding: AttendanceBinding(),
-    // ),
+    GetPage(
+      name: AppRoutes.profile,
+      page: () => ProfileScreen(),
+      binding: ProfileBinding(),
+    ),
+
+    GetPage(
+      name: AppRoutes.attendance,
+      page: () => AttendanceScreen(),
+      binding: AttendanceBinding(),
+    ),
     // GetPage(
     //   name: AppRoutes.historyDetail,
     //   page: () => const HistoryDetailPage(),
