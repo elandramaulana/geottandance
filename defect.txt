@@ -1,0 +1,2 @@
+1. attendance semua logicnya ngumpul di attendance controller, pisahin kodenya ke model, service dan controller
+2. pastikan semua state management pake getx karna masih di temukan pake state manual untuk set loading dll
