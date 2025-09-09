@@ -1,2 +1,4 @@
 1. attendance semua logicnya ngumpul di attendance controller, pisahin kodenya ke model, service dan controller
 2. pastikan semua state management pake getx karna masih di temukan pake state manual untuk set loading dll
+3. maksimalin gunain snackbar widget yg udah disediain di /util/snackbar.dart, contoh penggunaannya ada di login/auth controller
+
