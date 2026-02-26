@@ -1,6 +1,7 @@
 // lib/core/base_provider.dart
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'package:geottandance/core/app_config.dart';
 import 'package:geottandance/services/storage_service.dart';
 
 class BaseApiProvider {
@@ -11,13 +12,10 @@ class BaseApiProvider {
   late Dio _dio;
   final StorageService _storageService = StorageService();
 
-  // Base URL untuk API
-  static const String baseUrl = 'http://10.0.2.2:8000/api';
-
   void initialize() {
     _dio = Dio(
       BaseOptions(
-        baseUrl: baseUrl,
+        baseUrl: AppConfig.baseUrl,
         connectTimeout: const Duration(seconds: 30),
         receiveTimeout: const Duration(seconds: 30),
         sendTimeout: const Duration(seconds: 30),

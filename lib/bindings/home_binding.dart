@@ -1,5 +1,6 @@
 // lib/bindings/home_binding.dart
 import 'package:geottandance/controllers/auth_controller.dart';
+import 'package:geottandance/controllers/history_controller.dart';
 import 'package:geottandance/controllers/home_controller.dart';
 import 'package:geottandance/controllers/summary_history_controller.dart';
 import 'package:geottandance/services/home_service.dart';
@@ -13,7 +14,10 @@ class HomeBinding extends Bindings {
     // Initialize core services first
     Get.lazyPut<StorageService>(() => StorageService(), fenix: true);
     Get.lazyPut<BaseApiProvider>(() => BaseApiProvider(), fenix: true);
-
+    Get.lazyPut<AttendanceHistoryController>(
+      () => AttendanceHistoryController(),
+      fenix: true,
+    );
     // Initialize home-specific services
     Get.lazyPut<HomeService>(() => HomeService(), fenix: true);
 

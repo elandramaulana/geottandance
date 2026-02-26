@@ -5,19 +5,16 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:geottandance/controllers/history_detail_controller.dart';
-import 'package:flutter/foundation.dart';
 
 class HistoryDetailScreen extends GetView<AttendanceDetailController> {
   const HistoryDetailScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // Get the attendance ID from arguments
     final int attendanceId = Get.arguments as int;
 
-    // Load the attendance detail when screen loads
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (controller.currentAttendanceId != attendanceId) {
+      if (controller.currentAttendanceId.value != attendanceId) {
         controller.loadAttendanceDetail(attendanceId);
       }
     });
@@ -41,31 +38,22 @@ class HistoryDetailScreen extends GetView<AttendanceDetailController> {
           onPressed: () => Get.back(),
         ),
       ),
-      body: GetBuilder<AttendanceDetailController>(
-        builder: (controller) {
-          // Debug logging
-          if (kDebugMode) {
-            print(
-              '🔄 UI Builder called - isLoading: ${controller.isLoading}, hasError: ${controller.hasError}, hasData: ${controller.hasData}',
-            );
-          }
+      body: Obx(() {
+        if (controller.isLoading.value) {
+          return _buildLoadingState();
+        }
 
-          if (controller.isLoading) {
-            return _buildLoadingState();
-          }
+        if (controller.hasError.value) {
+          return _buildErrorState(controller.errorMessage.value);
+        }
 
-          if (controller.hasError) {
-            return _buildErrorState(controller.errorMessage);
-          }
+        if (!controller.hasData) {
+          return _buildNoDataState();
+        }
 
-          if (!controller.hasData) {
-            return _buildNoDataState();
-          }
-
-          final attendance = controller.attendanceDetail!;
-          return _buildDetailContent(attendance);
-        },
-      ),
+        final attendance = controller.attendanceDetail.value!;
+        return _buildDetailContent(attendance);
+      }),
     );
   }
 
@@ -183,17 +171,16 @@ class HistoryDetailScreen extends GetView<AttendanceDetailController> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Date and Status Card
           _buildDateStatusCard(attendance),
-
+          SizedBox(height: 16.h),
+          _buildAttendanceTimeline(attendance),
           SizedBox(height: 16.h),
 
-          // Attendance Timeline Section
-          _buildAttendanceTimeline(attendance),
+          if (attendance.overtimeDurationMinutes > 0) ...[
+            _buildOvertimeCard(attendance),
+            SizedBox(height: 16.h),
+          ],
 
-          SizedBox(height: 24.h),
-
-          // Location Sections
           if (attendance.clockInLocation.hasCoordinates) ...[
             _buildLocationSection(
               'Check In Location',
@@ -214,7 +201,6 @@ class HistoryDetailScreen extends GetView<AttendanceDetailController> {
             SizedBox(height: 16.h),
           ],
 
-          // Additional Info Card
           if (attendance.notes.isNotEmpty) _buildNotesCard(attendance.notes),
         ],
       ),
@@ -241,7 +227,6 @@ class HistoryDetailScreen extends GetView<AttendanceDetailController> {
       ),
       child: Row(
         children: [
-          // Calendar Icon with Date
           Container(
             width: 60.w,
             height: 60.h,
@@ -269,10 +254,7 @@ class HistoryDetailScreen extends GetView<AttendanceDetailController> {
               ],
             ),
           ),
-
           SizedBox(width: 16.w),
-
-          // Date Info
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -296,8 +278,6 @@ class HistoryDetailScreen extends GetView<AttendanceDetailController> {
               ],
             ),
           ),
-
-          // Status Badge
           Container(
             padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
             decoration: BoxDecoration(
@@ -319,7 +299,6 @@ class HistoryDetailScreen extends GetView<AttendanceDetailController> {
   }
 
   Widget _buildAttendanceTimeline(attendance) {
-    // Safely get working hours (default to 8 hours if not available)
     final workingHours = attendance.workDurationMinutes > 0
         ? attendance.formattedWorkDuration
         : attendance.hasClockIn && !attendance.hasClockOut
@@ -361,30 +340,22 @@ class HistoryDetailScreen extends GetView<AttendanceDetailController> {
               ),
             ],
           ),
-
           SizedBox(height: 20.h),
-
-          // Timeline Items
           Row(
             children: [
-              // Check In
               Expanded(
                 child: _buildTimelineItem(
                   'IN',
                   attendance.displayClockIn,
-                  '', // Remove static time
                   Colors.green,
                   Icons.login_rounded,
                   isActive: attendance.hasClockIn,
                 ),
               ),
-
-              // Duration
               Expanded(
                 child: _buildTimelineItem(
                   'DURATION',
                   workingHours,
-                  '',
                   Colors.blue,
                   Icons.access_time_filled_rounded,
                   isActive:
@@ -392,13 +363,10 @@ class HistoryDetailScreen extends GetView<AttendanceDetailController> {
                       attendance.hasClockIn,
                 ),
               ),
-
-              // Check Out
               Expanded(
                 child: _buildTimelineItem(
                   'OUT',
                   attendance.displayClockOut,
-                  '', // Remove static time
                   Colors.red,
                   Icons.logout_rounded,
                   isActive: attendance.hasClockOut,
@@ -411,10 +379,123 @@ class HistoryDetailScreen extends GetView<AttendanceDetailController> {
     );
   }
 
+  Widget _buildOvertimeCard(attendance) {
+    final overtimeMinutes = attendance.overtimeDurationMinutes;
+    final hours = overtimeMinutes ~/ 60;
+    final minutes = overtimeMinutes % 60;
+    final formattedOvertime = hours > 0
+        ? '${hours}h ${minutes}m'
+        : '${minutes}m';
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(20.w),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            const Color(0xFFFF6B35).withOpacity(0.1),
+            const Color(0xFFFF8C42).withOpacity(0.05),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(
+          color: const Color(0xFFFF6B35).withOpacity(0.3),
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFFF6B35).withOpacity(0.1),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 56.w,
+            height: 56.h,
+            decoration: BoxDecoration(
+              color: const Color(0xFFFF6B35).withOpacity(0.15),
+              borderRadius: BorderRadius.circular(12.r),
+            ),
+            child: Icon(
+              Icons.add_alarm_rounded,
+              color: const Color(0xFFFF6B35),
+              size: 28.sp,
+            ),
+          ),
+          SizedBox(width: 16.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Overtime',
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF666666),
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                SizedBox(height: 4.h),
+                Text(
+                  formattedOvertime,
+                  style: TextStyle(
+                    fontSize: 24.sp,
+                    fontWeight: FontWeight.w800,
+                    color: const Color(0xFFFF6B35),
+                    height: 1.2,
+                  ),
+                ),
+                SizedBox(height: 2.h),
+                Text(
+                  'Extra working time',
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    color: const Color(0xFF666666),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFF6B35),
+              borderRadius: BorderRadius.circular(20.r),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.trending_up_rounded,
+                  color: Colors.white,
+                  size: 14.sp,
+                ),
+                SizedBox(width: 4.w),
+                Text(
+                  '${attendance.overtimeDurationHours.toStringAsFixed(2)}h',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 11.sp,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildTimelineItem(
     String label,
     String time,
-    String duration,
     Color color,
     IconData icon, {
     bool isActive = true,
@@ -433,9 +514,7 @@ class HistoryDetailScreen extends GetView<AttendanceDetailController> {
           ),
           child: Icon(icon, color: isActive ? color : Colors.grey, size: 24.sp),
         ),
-
         SizedBox(height: 8.h),
-
         Text(
           label,
           style: TextStyle(
@@ -445,9 +524,7 @@ class HistoryDetailScreen extends GetView<AttendanceDetailController> {
             letterSpacing: 0.5,
           ),
         ),
-
         SizedBox(height: 4.h),
-
         Text(
           time,
           style: TextStyle(
@@ -456,14 +533,6 @@ class HistoryDetailScreen extends GetView<AttendanceDetailController> {
             color: const Color(0xFF1A1A1A),
           ),
         ),
-
-        if (duration.isNotEmpty) ...[
-          SizedBox(height: 2.h),
-          Text(
-            duration,
-            style: TextStyle(fontSize: 10.sp, color: const Color(0xFF666666)),
-          ),
-        ],
       ],
     );
   }
@@ -490,7 +559,6 @@ class HistoryDetailScreen extends GetView<AttendanceDetailController> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
           Padding(
             padding: EdgeInsets.all(20.w),
             child: Row(
@@ -535,8 +603,6 @@ class HistoryDetailScreen extends GetView<AttendanceDetailController> {
               ],
             ),
           ),
-
-          // Map
           if (location.hasCoordinates) ...[
             Container(
               height: 200.h,
@@ -610,7 +676,6 @@ class HistoryDetailScreen extends GetView<AttendanceDetailController> {
     );
   }
 
-  // Helper Methods
   String _formatDate(String dateString) {
     try {
       final date = DateTime.parse(dateString);
@@ -696,7 +761,6 @@ class HistoryDetailScreen extends GetView<AttendanceDetailController> {
   }
 }
 
-// Map Widget Component
 class _MapWidget extends StatelessWidget {
   final double lat;
   final double lng;

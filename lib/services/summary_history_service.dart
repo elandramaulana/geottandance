@@ -19,6 +19,14 @@ class SummaryHistoryService {
   final Map<int, DateTime> _cacheTimestamps = {};
   static const Duration _cacheValidDuration = Duration(minutes: 5);
 
+  // Helper method to get summary URL with month parameter
+  static String getAttendanceSummaryUrl({int? month}) {
+    final currentMonth = month ?? DateTime.now().month;
+    String fullUrl =
+        '${AppConfig.baseUrl}${Endpoints.attendanceSummary}?month=$currentMonth';
+    return fullUrl;
+  }
+
   // Get attendance summary with caching and better error handling
   Future<SummaryHistoryModel?> getAttendanceSummary({
     int? month,
@@ -42,7 +50,7 @@ class SummaryHistoryService {
       }
 
       // Use the endpoint from Endpoints class with month parameter
-      final endpoint = Endpoints.getAttendanceSummaryUrl(month: currentMonth);
+      final endpoint = getAttendanceSummaryUrl(month: currentMonth);
 
       final response = await _apiProvider
           .get<Map<String, dynamic>>(endpoint)

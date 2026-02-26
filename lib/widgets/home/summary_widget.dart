@@ -22,7 +22,7 @@ class EnhancedSummarySectionWidget extends GetView<SummaryHistoryController> {
                 Text(
                   'Summary',
                   style: TextStyle(
-                    fontSize: 20.sp,
+                    fontSize: 18.sp,
                     fontWeight: FontWeight.bold,
                     color: Color(0xFF1C5B41),
                   ),
@@ -34,14 +34,14 @@ class EnhancedSummarySectionWidget extends GetView<SummaryHistoryController> {
                           children: [
                             Icon(
                               Icons.calendar_month,
-                              size: 14.sp,
+                              size: 12.sp,
                               color: Color(0xFF2E7D5F),
                             ),
                             SizedBox(width: 4.w),
                             Text(
                               controller.summaryData!.period,
                               style: TextStyle(
-                                fontSize: 12.sp,
+                                fontSize: 10.sp,
                                 fontWeight: FontWeight.w600,
                                 color: Color(0xFF2E7D5F),
                               ),
@@ -143,7 +143,7 @@ class EnhancedSummarySectionWidget extends GetView<SummaryHistoryController> {
           }
 
           if (controller.hasError && !controller.hasSummaryData) {
-            return _buildErrorState();
+            return Center(child: _buildErrorState());
           }
 
           return _buildEnhancedSummaryCards();
@@ -235,10 +235,10 @@ class EnhancedSummarySectionWidget extends GetView<SummaryHistoryController> {
 
   Widget _buildErrorState() {
     return Container(
-      height: 150.h,
+      height: 200.h,
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        gradient: LinearGradient(colors: [Colors.red[50]!, Colors.red[25]!]),
+        gradient: LinearGradient(colors: [Colors.red[50]!, Colors.red[100]!]),
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(color: Colors.red[200]!),
       ),

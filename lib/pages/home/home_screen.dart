@@ -137,7 +137,7 @@ class HomeScreen extends GetView<HomeController> {
               Align(
                 alignment: Alignment.bottomCenter,
                 child: Container(
-                  height: 0.51.sh,
+                  height: 0.48.sh,
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.only(

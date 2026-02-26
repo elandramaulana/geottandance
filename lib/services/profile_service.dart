@@ -1,5 +1,6 @@
 // services/profile_service.dart
 import 'package:flutter/foundation.dart';
+import 'package:geottandance/core/app_config.dart';
 import 'package:geottandance/core/base_provider.dart';
 import 'package:geottandance/services/storage_service.dart';
 import 'package:geottandance/models/profile_model.dart';
@@ -282,7 +283,7 @@ class ProfileService {
         return profile.avatar;
       }
       // Jika hanya filename, gabung dengan base URL
-      return '${BaseApiProvider.baseUrl}/storage/avatars/${profile.avatar}';
+      return '${AppConfig.baseUrl}/storage/avatars/${profile.avatar}';
     }
     return null;
   }

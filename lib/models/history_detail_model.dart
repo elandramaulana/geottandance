@@ -460,3 +460,23 @@ extension AttendanceDetailHistoryExtension on AttendanceDetailHistory {
   bool get needsCorrection =>
       isLate || isAbsent || (hasClockIn && !hasClockOut);
 }
+
+/// Generic service response model
+class ServiceResponse<T> {
+  final bool success;
+  final String message;
+  final T? data;
+  final int? statusCode;
+
+  ServiceResponse({
+    required this.success,
+    required this.message,
+    this.data,
+    this.statusCode,
+  });
+
+  @override
+  String toString() {
+    return 'ServiceResponse{success: $success, message: $message, data: $data, statusCode: $statusCode}';
+  }
+}

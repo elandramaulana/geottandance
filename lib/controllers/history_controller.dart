@@ -1,81 +1,78 @@
 // controllers/attendance_history_controller.dart
 import 'package:flutter/foundation.dart';
-import 'package:flutter/widgets.dart';
+import 'package:geottandance/models/history_statistic_model.dart';
 import 'package:get/get.dart';
 import 'package:geottandance/services/history_service.dart';
 import 'package:geottandance/models/history_model.dart';
 
-enum HistoryLoadingState { idle, loading, loaded, error, loadingMore }
-
 class AttendanceHistoryController extends GetxController {
   final AttendanceHistoryService _historyService = AttendanceHistoryService();
 
-  // State management
-  HistoryLoadingState _state = HistoryLoadingState.idle;
-  String _errorMessage = '';
+  // Reactive State management
+  final isLoading = false.obs;
+  final isLoadingMore = false.obs;
+  final hasError = false.obs;
+  final errorMessage = ''.obs;
 
-  // Data
-  List<AttendanceHistory> _attendances = [];
-  PaginationInfo? _pagination;
-  AttendanceStatistics? _statistics;
+  // Reactive Data
+  final attendances = <AttendanceHistory>[].obs;
+  final pagination = Rxn<PaginationInfo>();
+  final statistics = Rxn<AttendanceStatistics>();
 
-  // Filter parameters
-  String? _selectedStatus;
-  DateTime? _startDate;
-  DateTime? _endDate;
-  int? _selectedMonth;
-  int? _selectedYear;
-
-  // Getters
-  HistoryLoadingState get state => _state;
-  String get errorMessage => _errorMessage;
-  List<AttendanceHistory> get attendances => _attendances;
-  PaginationInfo? get pagination => _pagination;
-  AttendanceStatistics? get statistics => _statistics;
-  String? get selectedStatus => _selectedStatus;
-  DateTime? get startDate => _startDate;
-  DateTime? get endDate => _endDate;
-  int? get selectedMonth => _selectedMonth;
-  int? get selectedYear => _selectedYear;
+  // Reactive Filter parameters
+  final selectedStatus = Rxn<String>();
+  final startDate = Rxn<DateTime>();
+  final endDate = Rxn<DateTime>();
+  final selectedMonth = Rxn<int>();
+  final selectedYear = Rxn<int>();
 
   // Computed properties
-  bool get isLoading => _state == HistoryLoadingState.loading;
-  bool get isLoadingMore => _state == HistoryLoadingState.loadingMore;
-  bool get hasError => _state == HistoryLoadingState.error;
-  bool get hasData => _attendances.isNotEmpty;
-  bool get canLoadMore => _pagination != null && _pagination!.hasNextPage;
+  bool get hasData => attendances.isNotEmpty;
+  bool get canLoadMore =>
+      pagination.value != null && pagination.value!.hasNextPage;
+  bool get shouldShowEmptyState =>
+      !hasData && !hasError.value && !isLoading.value;
+  bool get isValidationError =>
+      errorMessage.value.toLowerCase().contains('validation');
+  bool get isServerError {
+    if (!hasError.value || errorMessage.value.isEmpty) return false;
+    if (isValidationError) return false;
+
+    final message = errorMessage.value.toLowerCase();
+    return message.contains('failed') ||
+        message.contains('error') ||
+        message.contains('connection') ||
+        message.contains('timeout') ||
+        message.contains('server');
+  }
+
+  bool get shouldShowErrorState => hasError.value && isServerError;
 
   @override
   void onInit() {
     super.onInit();
-    // Initialize with all data (no filters applied) - delayed to avoid build conflicts
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      loadAllHistory();
-    });
+    // Initialize with all data (no filters applied)
+    Future.delayed(Duration.zero, loadAllHistory);
   }
 
   // Load all attendance history without filters
   Future<void> loadAllHistory() async {
     try {
-      _setState(HistoryLoadingState.loading);
-      _attendances.clear();
-      _clearError(); // Clear any previous errors
+      isLoading.value = true;
+      attendances.clear();
+      _clearError();
 
       final response = await _historyService.getAttendanceHistory(
         page: 1,
-        perPage: 100, // Load more records initially
+        perPage: 100,
       );
 
       if (response.success && response.data != null) {
-        _pagination = response.data!.pagination;
-        _attendances = response.data!.attendances;
-
-        // Sort by date descending (latest first)
-        _attendances.sort(
-          (a, b) => DateTime.parse(b.date).compareTo(DateTime.parse(a.date)),
-        );
-
-        _setState(HistoryLoadingState.loaded);
+        pagination.value = response.data!.pagination;
+        attendances.value = response.data!.attendances
+          ..sort(
+            (a, b) => DateTime.parse(b.date).compareTo(DateTime.parse(a.date)),
+          );
 
         if (kDebugMode) {
           print(
@@ -83,13 +80,10 @@ class AttendanceHistoryController extends GetxController {
           );
         }
       } else {
-        // Check if this is a "no data" response vs actual error
         if (response.message.toLowerCase().contains('no data') ||
             response.message.toLowerCase().contains('tidak ada data') ||
             response.message.toLowerCase().contains('empty')) {
-          // This is not an error, just no data available
-          _attendances.clear();
-          _setState(HistoryLoadingState.loaded);
+          attendances.clear();
           if (kDebugMode) {
             print('ℹ️ No attendance data available');
           }
@@ -99,6 +93,8 @@ class AttendanceHistoryController extends GetxController {
       }
     } catch (e) {
       _setError('Failed to load attendance history: ${e.toString()}');
+    } finally {
+      isLoading.value = false;
     }
   }
 
@@ -109,94 +105,95 @@ class AttendanceHistoryController extends GetxController {
   }) async {
     try {
       if (isLoadMore) {
-        _setState(HistoryLoadingState.loadingMore);
+        isLoadingMore.value = true;
       } else {
-        _setState(HistoryLoadingState.loading);
-        if (page == 1) {
-          _attendances.clear(); // Clear existing data for fresh load
-        }
+        isLoading.value = true;
       }
 
-      _clearError(); // Clear any previous errors
+      if (!isLoadMore && page == 1) {
+        attendances.clear();
+      }
+
+      _clearError();
 
       if (kDebugMode) {
         print('🔍 Loading attendance with filters:');
-        print('   Status: $_selectedStatus');
+        print('   Status: ${selectedStatus.value}');
         print(
-          '   Start Date: ${_startDate != null ? _formatDate(_startDate!) : null}',
+          '   Start Date: ${startDate.value != null ? _formatDate(startDate.value!) : null}',
         );
         print(
-          '   End Date: ${_endDate != null ? _formatDate(_endDate!) : null}',
+          '   End Date: ${endDate.value != null ? _formatDate(endDate.value!) : null}',
         );
-        print('   Month: ${_selectedMonth?.toString().padLeft(2, '0')}');
-        print('   Year: ${_selectedYear?.toString()}');
+        print('   Month: ${selectedMonth.value?.toString().padLeft(2, '0')}');
+        print('   Year: ${selectedYear.value?.toString()}');
       }
 
       final response = await _historyService.getAttendanceHistory(
         page: page,
-        status: _selectedStatus,
-        startDate: _startDate != null ? _formatDate(_startDate!) : null,
-        endDate: _endDate != null ? _formatDate(_endDate!) : null,
-        month: _selectedMonth?.toString().padLeft(2, '0'),
-        year: _selectedYear?.toString(),
+        status: selectedStatus.value,
+        startDate: startDate.value != null
+            ? _formatDate(startDate.value!)
+            : null,
+        endDate: endDate.value != null ? _formatDate(endDate.value!) : null,
+        month: selectedMonth.value?.toString().padLeft(2, '0'),
+        year: selectedYear.value?.toString(),
       );
 
       if (response.success && response.data != null) {
-        _pagination = response.data!.pagination;
+        pagination.value = response.data!.pagination;
 
-        List<AttendanceHistory> newAttendances = response.data!.attendances;
-
-        // Sort by date descending (latest first)
-        newAttendances.sort(
-          (a, b) => DateTime.parse(b.date).compareTo(DateTime.parse(a.date)),
-        );
+        List<AttendanceHistory> newAttendances = response.data!.attendances
+          ..sort(
+            (a, b) => DateTime.parse(b.date).compareTo(DateTime.parse(a.date)),
+          );
 
         if (isLoadMore) {
-          _attendances.addAll(newAttendances);
+          attendances.addAll(newAttendances);
         } else {
-          _attendances = newAttendances;
+          attendances.value = newAttendances;
         }
-
-        _setState(HistoryLoadingState.loaded);
 
         if (kDebugMode) {
           print(
-            '✅ Loaded ${newAttendances.length} attendance records (Total: ${_attendances.length})',
+            '✅ Loaded ${newAttendances.length} attendance records (Total: ${attendances.length})',
           );
-          if (_attendances.isNotEmpty) {
-            print('   First record date: ${_attendances.first.date}');
-            print('   Last record date: ${_attendances.last.date}');
+          if (attendances.isNotEmpty) {
+            print('   First record date: ${attendances.first.date}');
+            print('   Last record date: ${attendances.last.date}');
           }
         }
       } else {
-        // Handle different types of "no data" responses
         if (response.message.toLowerCase().contains('no data') ||
             response.message.toLowerCase().contains('tidak ada data') ||
             response.message.toLowerCase().contains('empty') ||
             response.message.toLowerCase().contains('validation')) {
-          // This is not an error, just no data matching the filter
           if (!isLoadMore) {
-            _attendances.clear();
+            attendances.clear();
           }
-          _setState(HistoryLoadingState.loaded);
           if (kDebugMode) {
             print('ℹ️ No attendance data matching current filters');
           }
         } else {
-          // This is an actual error
           _setError(response.message);
         }
       }
     } catch (e) {
       _setError('Failed to load attendance history: ${e.toString()}');
+    } finally {
+      if (isLoadMore) {
+        isLoadingMore.value = false;
+      } else {
+        isLoading.value = false;
+      }
     }
   }
 
   // Load more data (pagination)
   Future<void> loadMoreData() async {
-    if (!canLoadMore || isLoadingMore) return;
+    if (!canLoadMore || isLoadingMore.value) return;
 
-    final nextPage = (_pagination?.currentPage ?? 0) + 1;
+    final nextPage = (pagination.value?.currentPage ?? 0) + 1;
     await loadAttendanceHistory(page: nextPage, isLoadMore: true);
   }
 
@@ -216,16 +213,13 @@ class AttendanceHistoryController extends GetxController {
   // Load statistics
   Future<void> loadStatistics() async {
     try {
-      _statistics = await _historyService.getAttendanceStatistics(
-        month: _selectedMonth?.toString().padLeft(2, '0'),
-        year: _selectedYear?.toString(),
+      statistics.value = await _historyService.getAttendanceStatistics(
+        month: selectedMonth.value?.toString().padLeft(2, '0'),
+        year: selectedYear.value?.toString(),
       );
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        update();
-      });
 
       if (kDebugMode) {
-        print('✅ Statistics loaded: ${_statistics.toString()}');
+        print('✅ Statistics loaded: ${statistics.value.toString()}');
       }
     } catch (e) {
       if (kDebugMode) {
@@ -236,57 +230,46 @@ class AttendanceHistoryController extends GetxController {
 
   // Set filters
   void setStatusFilter(String? status) {
-    if (_selectedStatus != status) {
-      _selectedStatus = status;
-      _clearError(); // Clear error when filter changes
+    if (selectedStatus.value != status) {
+      selectedStatus.value = status;
+      _clearError();
       if (kDebugMode) {
         print('📊 Status filter set to: $status');
       }
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        update();
-      });
     }
   }
 
-  void setDateRangeFilter(DateTime? startDate, DateTime? endDate) {
-    if (_startDate != startDate || _endDate != endDate) {
-      _startDate = startDate;
-      _endDate = endDate;
+  void setDateRangeFilter(DateTime? start, DateTime? end) {
+    if (startDate.value != start || endDate.value != end) {
+      startDate.value = start;
+      endDate.value = end;
       // Clear month/year filter when using date range
-      _selectedMonth = null;
-      _selectedYear = null;
-      _clearError(); // Clear error when filter changes
+      selectedMonth.value = null;
+      selectedYear.value = null;
+      _clearError();
 
       if (kDebugMode) {
         print(
-          '📅 Date range filter set to: ${startDate != null ? _formatDate(startDate) : null} - ${endDate != null ? _formatDate(endDate) : null}',
+          '📅 Date range filter set to: ${start != null ? _formatDate(start) : null} - ${end != null ? _formatDate(end) : null}',
         );
       }
-
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        update();
-      });
     }
   }
 
   void setMonthFilter(int year, int month) {
-    if (_selectedYear != year || _selectedMonth != month) {
-      _selectedYear = year;
-      _selectedMonth = month;
+    if (selectedYear.value != year || selectedMonth.value != month) {
+      selectedYear.value = year;
+      selectedMonth.value = month;
       // Clear date range filter when using month filter
-      _startDate = null;
-      _endDate = null;
-      _clearError(); // Clear error when filter changes
+      startDate.value = null;
+      endDate.value = null;
+      _clearError();
 
       if (kDebugMode) {
         print(
           '🗓️ Month filter set to: $year-${month.toString().padLeft(2, '0')}',
         );
       }
-
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        update();
-      });
     }
   }
 
@@ -294,35 +277,32 @@ class AttendanceHistoryController extends GetxController {
   void clearFilters() {
     bool hasChanges = false;
 
-    if (_selectedStatus != null) {
-      _selectedStatus = null;
+    if (selectedStatus.value != null) {
+      selectedStatus.value = null;
       hasChanges = true;
     }
-    if (_startDate != null) {
-      _startDate = null;
+    if (startDate.value != null) {
+      startDate.value = null;
       hasChanges = true;
     }
-    if (_endDate != null) {
-      _endDate = null;
+    if (endDate.value != null) {
+      endDate.value = null;
       hasChanges = true;
     }
-    if (_selectedMonth != null) {
-      _selectedMonth = null;
+    if (selectedMonth.value != null) {
+      selectedMonth.value = null;
       hasChanges = true;
     }
-    if (_selectedYear != null) {
-      _selectedYear = null;
+    if (selectedYear.value != null) {
+      selectedYear.value = null;
       hasChanges = true;
     }
 
     if (hasChanges) {
-      _clearError(); // Clear error when filters are cleared
+      _clearError();
       if (kDebugMode) {
         print('🧹 All filters cleared');
       }
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        update();
-      });
     }
   }
 
@@ -332,21 +312,21 @@ class AttendanceHistoryController extends GetxController {
       print('🔄 Applying filters...');
     }
 
-    _clearError(); // Clear any previous errors before applying filters
+    _clearError();
 
     // If no filters are applied, load all history
-    if (_selectedStatus == null &&
-        _startDate == null &&
-        _endDate == null &&
-        _selectedMonth == null &&
-        _selectedYear == null) {
+    if (selectedStatus.value == null &&
+        startDate.value == null &&
+        endDate.value == null &&
+        selectedMonth.value == null &&
+        selectedYear.value == null) {
       await loadAllHistory();
     } else {
       await loadAttendanceHistory();
     }
 
     // Only load statistics if we have month/year filter or all data
-    if (_selectedMonth != null && _selectedYear != null) {
+    if (selectedMonth.value != null && selectedYear.value != null) {
       await loadStatistics();
     }
   }
@@ -357,18 +337,18 @@ class AttendanceHistoryController extends GetxController {
       print('🔄 Refreshing data...');
     }
 
-    _clearError(); // Clear any previous errors
+    _clearError();
 
     // Check if any filters are active
     bool hasActiveFilters =
-        _selectedStatus != null ||
-        _startDate != null ||
-        _endDate != null ||
-        (_selectedMonth != null && _selectedYear != null);
+        selectedStatus.value != null ||
+        startDate.value != null ||
+        endDate.value != null ||
+        (selectedMonth.value != null && selectedYear.value != null);
 
     if (hasActiveFilters) {
       await loadAttendanceHistory();
-      if (_selectedMonth != null && _selectedYear != null) {
+      if (selectedMonth.value != null && selectedYear.value != null) {
         await loadStatistics();
       }
     } else {
@@ -378,10 +358,10 @@ class AttendanceHistoryController extends GetxController {
 
   // Search in current data
   List<AttendanceHistory> searchAttendances(String query) {
-    if (query.isEmpty) return _attendances;
+    if (query.isEmpty) return attendances;
 
     final lowercaseQuery = query.toLowerCase();
-    return _attendances.where((attendance) {
+    return attendances.where((attendance) {
       return attendance.date.contains(query) ||
           attendance.dayName.toLowerCase().contains(lowercaseQuery) ||
           attendance.statusLabel.toLowerCase().contains(lowercaseQuery) ||
@@ -393,7 +373,7 @@ class AttendanceHistoryController extends GetxController {
   // Get attendance by date
   AttendanceHistory? getAttendanceByDate(String date) {
     try {
-      return _attendances.firstWhere((attendance) => attendance.date == date);
+      return attendances.firstWhere((attendance) => attendance.date == date);
     } catch (e) {
       return null;
     }
@@ -401,7 +381,7 @@ class AttendanceHistoryController extends GetxController {
 
   // Get attendances by status
   List<AttendanceHistory> getAttendancesByStatus(String status) {
-    return _attendances
+    return attendances
         .where((attendance) => attendance.status == status)
         .toList();
   }
@@ -411,7 +391,7 @@ class AttendanceHistoryController extends GetxController {
     final now = DateTime.now();
     final weekAgo = now.subtract(const Duration(days: 7));
 
-    return _attendances.where((attendance) {
+    return attendances.where((attendance) {
       final attendanceDate = DateTime.parse(attendance.date);
       return attendanceDate.isAfter(weekAgo) &&
           attendanceDate.isBefore(now.add(const Duration(days: 1)));
@@ -421,7 +401,7 @@ class AttendanceHistoryController extends GetxController {
   // Get attendances for current month
   List<AttendanceHistory> getCurrentMonthAttendances() {
     final now = DateTime.now();
-    return _attendances.where((attendance) {
+    return attendances.where((attendance) {
       final attendanceDate = DateTime.parse(attendance.date);
       return attendanceDate.year == now.year &&
           attendanceDate.month == now.month;
@@ -433,18 +413,9 @@ class AttendanceHistoryController extends GetxController {
     return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
   }
 
-  void _setState(HistoryLoadingState newState) {
-    if (_state != newState) {
-      _state = newState;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        update();
-      });
-    }
-  }
-
   void _setError(String message) {
-    _errorMessage = message;
-    _setState(HistoryLoadingState.error);
+    errorMessage.value = message;
+    hasError.value = true;
 
     if (kDebugMode) {
       print('❌ AttendanceHistoryController Error: $message');
@@ -452,42 +423,29 @@ class AttendanceHistoryController extends GetxController {
   }
 
   void _clearError() {
-    if (_errorMessage.isNotEmpty) {
-      _errorMessage = '';
+    if (errorMessage.value.isNotEmpty || hasError.value) {
+      errorMessage.value = '';
+      hasError.value = false;
       if (kDebugMode) {
-        print('🧹 Error message cleared');
+        print('🧹 Error cleared');
       }
     }
   }
 
-  // Check if current state should show empty vs error
-  bool get shouldShowEmptyState {
-    return !hasData && !hasError && !isLoading;
-  }
-
-  bool get shouldShowErrorState {
-    return hasError &&
-        _errorMessage.isNotEmpty &&
-        !_errorMessage.toLowerCase().contains('validation') &&
-        !_errorMessage.toLowerCase().contains('no data') &&
-        !_errorMessage.toLowerCase().contains('tidak ada data');
-  }
-
   // Reset controller
   void reset() {
-    _attendances.clear();
-    _pagination = null;
-    _statistics = null;
-    _selectedStatus = null;
-    _startDate = null;
-    _endDate = null;
-    _selectedMonth = null;
-    _selectedYear = null;
-    _setState(HistoryLoadingState.idle);
-    _errorMessage = '';
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      update();
-    });
+    attendances.clear();
+    pagination.value = null;
+    statistics.value = null;
+    selectedStatus.value = null;
+    startDate.value = null;
+    endDate.value = null;
+    selectedMonth.value = null;
+    selectedYear.value = null;
+    isLoading.value = false;
+    isLoadingMore.value = false;
+    hasError.value = false;
+    errorMessage.value = '';
   }
 
   @override

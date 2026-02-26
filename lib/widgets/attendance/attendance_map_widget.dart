@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:geottandance/controllers/attendance_controller.dart';
 import 'package:geottandance/controllers/attendance_map_controller.dart';
+import 'package:geottandance/models/attendance_model.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';

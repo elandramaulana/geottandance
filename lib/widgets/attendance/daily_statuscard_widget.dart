@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:geottandance/controllers/attendance_controller.dart';
+import 'package:geottandance/models/attendance_model.dart';
 import 'package:get/get.dart';
 
 class DailyStatusCard extends StatelessWidget {

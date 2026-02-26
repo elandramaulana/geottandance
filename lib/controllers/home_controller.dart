@@ -27,9 +27,10 @@ class HomeController extends GetxController {
   String? get currentUserName {
     try {
       final authController = Get.find<AuthController>();
-      return attendanceStatus?.employeeName ??
-          authController.currentUserName ??
-          'User';
+      // return attendanceStatus?.employeeName ??
+      //     authController.currentUserName ??
+      //     'User';
+      return 'user';
     } catch (e) {
       return attendanceStatus?.employeeName ?? 'User';
     }

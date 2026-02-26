@@ -1,191 +1,51 @@
-// lib/controllers/attendance_controller.dart - FIXED VERSION
+// lib/controllers/attendance_controller.dart
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:geottandance/models/attendance_model.dart';
 import 'package:get/get.dart';
-import 'package:geottandance/core/base_provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:intl/intl.dart';
-
-// Enum untuk status attendance
-enum AttendanceStatus { notStarted, clockedIn, completed }
-
-// Model untuk Office Location
-class OfficeLocation {
-  final double latitude;
-  final double longitude;
-  final double allowedRadius;
-
-  OfficeLocation({
-    required this.latitude,
-    required this.longitude,
-    required this.allowedRadius,
-  });
-
-  factory OfficeLocation.fromJson(Map<String, dynamic> json) {
-    return OfficeLocation(
-      latitude: (json['office_latitude'] ?? -6.2).toDouble(),
-      longitude: (json['office_longitude'] ?? 106.816666).toDouble(),
-      allowedRadius: (json['allowed_radius'] ?? 100.0).toDouble(),
-    );
-  }
-}
-
-// Enhanced Model untuk Today's Attendance - FIXED
-class TodayAttendance {
-  final String? clockInTime;
-  final String? clockOutTime;
-  final String? workDuration;
-  final bool? isClockInLate;
-  final String? clockInStatus;
-  final String? clockOutStatus;
-
-  TodayAttendance({
-    this.clockInTime,
-    this.clockOutTime,
-    this.workDuration,
-    this.isClockInLate,
-    this.clockInStatus,
-    this.clockOutStatus,
-  });
-
-  // FIXED: Factory for API status response
-  factory TodayAttendance.fromStatusResponse(Map<String, dynamic> data) {
-    final todayAttendance = data['today_attendance'];
-    if (todayAttendance != null) {
-      return TodayAttendance(
-        clockInTime: todayAttendance['clock_in'],
-        clockOutTime: todayAttendance['clock_out'],
-        workDuration: _calculateDuration(
-          todayAttendance['clock_in'],
-          todayAttendance['clock_out'],
-        ),
-        isClockInLate: todayAttendance['status'] == 'late',
-        clockInStatus: todayAttendance['status'] ?? 'on_time',
-        clockOutStatus: todayAttendance['clock_out'] != null
-            ? 'completed'
-            : null,
-      );
-    }
-    return TodayAttendance();
-  }
-
-  factory TodayAttendance.fromClockInResponse(Map<String, dynamic> data) {
-    return TodayAttendance(
-      clockInTime: data['clock_in_time'],
-      clockOutTime: null,
-      workDuration: '0m',
-      isClockInLate: data['is_late'] ?? false,
-      clockInStatus: data['status'] ?? 'on_time',
-      clockOutStatus: null,
-    );
-  }
-
-  factory TodayAttendance.fromClockOutResponse(
-    Map<String, dynamic> data,
-    TodayAttendance? previous,
-  ) {
-    return TodayAttendance(
-      clockInTime: previous?.clockInTime ?? 'Earlier',
-      clockOutTime: data['clock_out_time'],
-      workDuration:
-          data['work_duration'] ??
-          _calculateDuration(previous?.clockInTime, data['clock_out_time']),
-      isClockInLate: previous?.isClockInLate ?? false,
-      clockInStatus: previous?.clockInStatus ?? 'completed',
-      clockOutStatus: data['status'] ?? 'completed',
-    );
-  }
-
-  // Helper method to calculate duration
-  static String _calculateDuration(String? clockIn, String? clockOut) {
-    if (clockIn == null || clockOut == null) return '0m';
-
-    try {
-      final inTime = DateFormat('HH:mm:ss').parse(clockIn);
-      final outTime = DateFormat('HH:mm:ss').parse(clockOut);
-      final duration = outTime.difference(inTime);
-
-      if (duration.inHours > 0) {
-        return '${duration.inHours}h ${duration.inMinutes.remainder(60)}m';
-      } else {
-        return '${duration.inMinutes}m';
-      }
-    } catch (e) {
-      return '0m';
-    }
-  }
-
-  // Helper methods for UI display
-  String get displayClockInTime => clockInTime ?? 'Not yet';
-  String get displayClockOutTime => clockOutTime ?? 'Not yet';
-  String get displayWorkDuration => workDuration ?? '0m';
-
-  String get clockInStatusText {
-    if (clockInTime == null) return 'Not yet';
-    if (isClockInLate == true) return 'Late';
-    return 'On Time';
-  }
-
-  String get clockOutStatusText {
-    if (clockOutTime == null) return 'Not yet';
-    return 'Completed';
-  }
-
-  Color get clockInStatusColor {
-    if (clockInTime == null) return Colors.grey;
-    if (isClockInLate == true) return Colors.red;
-    return Colors.green;
-  }
-
-  Color get clockOutStatusColor {
-    if (clockOutTime == null) return Colors.grey;
-    return Colors.green;
-  }
-}
+import '../services/attendance_service.dart';
+import '../services/location_service.dart';
 
 class AttendanceController extends GetxController {
-  final BaseApiProvider _apiProvider = BaseApiProvider();
+  final AttendanceService _attendanceService = AttendanceService();
+  final LocationService _locationService = LocationService();
 
   // Observables
   final Rx<Position?> _currentPosition = Rx<Position?>(null);
   final Rx<OfficeLocation?> _officeLocation = Rx<OfficeLocation?>(null);
   final RxBool _isLoading = false.obs;
   final RxDouble _distance = 0.0.obs;
-  final RxList<AttendanceRecord> _attendanceRecords = <AttendanceRecord>[].obs;
   final Rx<AttendanceStatus> _attendanceStatus =
       AttendanceStatus.notStarted.obs;
   final Rx<TodayAttendance?> _todayAttendance = Rx<TodayAttendance?>(null);
   final RxString _errorMessage = ''.obs;
   final RxString _currentAddress = ''.obs;
-
-  // Add initialization flag to prevent multiple init calls
   final RxBool _isInitialized = false.obs;
   final RxBool _isInitializing = false.obs;
+  final RxList<AttendanceRecord> _attendanceRecords = <AttendanceRecord>[].obs;
 
-  // Add flags for allowing outside radius actions
-  final RxBool _allowOutsideRadiusClockIn = false.obs;
-  final RxBool _allowOutsideRadiusClockOut = false.obs;
-
-  // Add working day status
-  final RxBool _isWorkingDay = true.obs;
-
-  // NEW: Add server sync flags
+  // Server sync flags
   final RxBool _canClockInFromServer = true.obs;
   final RxBool _canClockOutFromServer = false.obs;
+  final RxBool _isWorkingDay = true.obs;
+
+  // Outside radius flags (temporary)
+  final RxBool _allowOutsideRadiusClockIn = false.obs;
+  final RxBool _allowOutsideRadiusClockOut = false.obs;
 
   // Getters
   Position? get currentPosition => _currentPosition.value;
   OfficeLocation? get officeLocation => _officeLocation.value;
   bool get isLoading => _isLoading.value;
   double get distance => _distance.value;
-  List<AttendanceRecord> get attendanceRecords => _attendanceRecords;
   AttendanceStatus get attendanceStatus => _attendanceStatus.value;
   TodayAttendance? get todayAttendance => _todayAttendance.value;
   String get errorMessage => _errorMessage.value;
   String get currentAddress => _currentAddress.value;
   bool get isWorkingDay => _isWorkingDay.value;
+  List<AttendanceRecord> get attendanceRecords => _attendanceRecords;
 
   bool get isWithinRadius {
     if (_officeLocation.value == null || _currentPosition.value == null) {
@@ -194,7 +54,6 @@ class AttendanceController extends GetxController {
     return _distance.value <= _officeLocation.value!.allowedRadius;
   }
 
-  // FIXED: Improved button state logic with server sync
   bool get canClockIn {
     return !isLoading &&
         _isInitialized.value &&
@@ -220,22 +79,12 @@ class AttendanceController extends GetxController {
       print('🚀 AttendanceController onInit called');
     }
 
-    // Only initialize once
     if (!_isInitialized.value && !_isInitializing.value) {
       _initializeAttendance();
     }
   }
 
-  @override
-  void onClose() {
-    if (kDebugMode) {
-      print('🔚 AttendanceController onClose called');
-    }
-    _attendanceRecords.clear();
-    super.onClose();
-  }
-
-  // FIXED: Improved initialization with API status check
+  /// Initialize attendance system
   Future<void> _initializeAttendance() async {
     if (_isInitializing.value || _isInitialized.value) {
       if (kDebugMode) {
@@ -253,14 +102,17 @@ class AttendanceController extends GetxController {
         print('🔄 Starting attendance initialization...');
       }
 
-      await _requestLocationPermission();
+      // Get current location
       await _getCurrentLocation();
       await _getCurrentAddress();
+
+      // Get office location
       await _getOfficeLocation();
 
+      // Calculate distance
       _calculateDistance();
 
-      // FIXED: Get current attendance status from server
+      // Get current attendance status from server
       await _getAttendanceStatus();
 
       _isInitialized.value = true;
@@ -269,265 +121,43 @@ class AttendanceController extends GetxController {
         print('✅ Attendance initialization completed successfully');
       }
     } catch (e) {
-      _errorMessage.value = e.toString();
-      if (kDebugMode) {
-        print('❌ Initialize attendance error: $e');
-      }
-
-      // Set default office location if API fails
-      if (_officeLocation.value == null) {
-        _officeLocation.value = OfficeLocation(
-          latitude: -6.2,
-          longitude: 106.816666,
-          allowedRadius: 100.0,
-        );
-        _calculateDistance();
-        _isInitialized.value = true;
-      }
-
-      // Don't show snackbar if widget is not ready
-      if (Get.context != null) {
-        Get.snackbar(
-          'Warning',
-          'Failed to connect to server. Using offline mode.',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.orange,
-          colorText: Colors.white,
-        );
-      }
+      _handleInitializationError(e);
     } finally {
       _isLoading.value = false;
       _isInitializing.value = false;
     }
   }
 
-  // NEW: Get attendance status from server
-  Future<void> _getAttendanceStatus() async {
-    try {
-      if (kDebugMode) {
-        print('📤 Getting attendance status from server...');
-      }
+  /// Handle initialization errors
+  void _handleInitializationError(dynamic error) {
+    _errorMessage.value = error.toString();
+    if (kDebugMode) {
+      print('❌ Initialize attendance error: $error');
+    }
 
-      final response = await _apiProvider
-          .get<Map<String, dynamic>>('/attendance/status')
-          .timeout(const Duration(seconds: 15));
+    // Set default office location if API fails
+    if (_officeLocation.value == null) {
+      _officeLocation.value = OfficeLocation.defaultLocation;
+      _calculateDistance();
+      _isInitialized.value = true;
+    }
 
-      if (response.success && response.data != null) {
-        final data = response.data!;
-
-        // Update server capabilities
-        _canClockInFromServer.value = data['can_clock_in'] ?? true;
-        _canClockOutFromServer.value = data['can_clock_out'] ?? false;
-
-        // Check if it's a working day
-        final message = data['message'] ?? '';
-        if (message.contains('not a working day')) {
-          _isWorkingDay.value = false;
-          _attendanceStatus.value = AttendanceStatus.notStarted;
-          _todayAttendance.value = null;
-        } else {
-          _isWorkingDay.value = true;
-
-          // Update today's attendance data
-          if (data['today_attendance'] != null) {
-            _todayAttendance.value = TodayAttendance.fromStatusResponse(data);
-
-            // Determine attendance status based on server data
-            final todayData = data['today_attendance'];
-            if (todayData['clock_out'] != null) {
-              _attendanceStatus.value = AttendanceStatus.completed;
-            } else if (todayData['clock_in'] != null) {
-              _attendanceStatus.value = AttendanceStatus.clockedIn;
-            } else {
-              _attendanceStatus.value = AttendanceStatus.notStarted;
-            }
-          } else {
-            // No attendance data for today
-            _attendanceStatus.value = AttendanceStatus.notStarted;
-            _todayAttendance.value = null;
-          }
-        }
-
-        // Save the current state to local storage
-        await _saveAttendanceStatus();
-
-        if (kDebugMode) {
-          print('✅ Attendance status loaded from server');
-          print('Working day: ${_isWorkingDay.value}');
-          print('Can clock in: ${_canClockInFromServer.value}');
-          print('Can clock out: ${_canClockOutFromServer.value}');
-          print('Current status: ${_attendanceStatus.value}');
-        }
-      } else {
-        throw Exception(response.message);
-      }
-    } catch (e) {
-      if (kDebugMode) {
-        print('❌ Get attendance status error: $e');
-      }
-
-      // Fallback: Check local storage for today's data
-      await _checkAndRestoreLocalData();
+    // Don't show snackbar if widget is not ready
+    if (Get.context != null) {
+      Get.snackbar(
+        'Warning',
+        'Failed to connect to server. Using offline mode.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.orange,
+        colorText: Colors.white,
+      );
     }
   }
 
-  // NEW: Check and restore local data as fallback
-  Future<void> _checkAndRestoreLocalData() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
-      final lastAttendanceDate = prefs.getString('last_attendance_date');
-
-      if (kDebugMode) {
-        print('📅 Fallback: Today: $today, Last date: $lastAttendanceDate');
-      }
-
-      if (lastAttendanceDate == today) {
-        // Same day - restore attendance status from storage
-        final savedStatus = prefs.getInt('attendance_status') ?? 0;
-        _attendanceStatus.value = AttendanceStatus.values[savedStatus];
-
-        // Restore today's attendance data if exists
-        final clockInTime = prefs.getString('today_clock_in_time');
-        final clockOutTime = prefs.getString('today_clock_out_time');
-        final workDuration = prefs.getString('today_work_duration');
-        final isLate = prefs.getBool('today_is_late') ?? false;
-
-        if (clockInTime != null) {
-          _todayAttendance.value = TodayAttendance(
-            clockInTime: clockInTime,
-            clockOutTime: clockOutTime,
-            workDuration: workDuration ?? '0m',
-            isClockInLate: isLate,
-            clockInStatus: isLate ? 'late' : 'on_time',
-            clockOutStatus: clockOutTime != null ? 'completed' : null,
-          );
-
-          // Update server capabilities based on local data
-          _canClockInFromServer.value = false;
-          _canClockOutFromServer.value = clockOutTime == null;
-        }
-
-        if (kDebugMode) {
-          print(
-            '📱 Restored attendance status from local storage: ${_attendanceStatus.value}',
-          );
-        }
-      } else {
-        // New day - reset everything
-        _attendanceStatus.value = AttendanceStatus.notStarted;
-        _todayAttendance.value = null;
-        _isWorkingDay.value = true;
-        _canClockInFromServer.value = true;
-        _canClockOutFromServer.value = false;
-
-        await prefs.setString('last_attendance_date', today);
-
-        if (kDebugMode) {
-          print('🔄 New day detected - attendance status reset');
-        }
-      }
-    } catch (e) {
-      if (kDebugMode) {
-        print('❌ Error restoring local data: $e');
-      }
-    }
-  }
-
-  // UPDATED: Save attendance status to storage
-  Future<void> _saveAttendanceStatus() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
-
-      await prefs.setString('last_attendance_date', today);
-      await prefs.setInt('attendance_status', _attendanceStatus.value.index);
-
-      // Save today's attendance data
-      if (_todayAttendance.value != null) {
-        final attendance = _todayAttendance.value!;
-        if (attendance.clockInTime != null) {
-          await prefs.setString('today_clock_in_time', attendance.clockInTime!);
-          await prefs.setBool(
-            'today_is_late',
-            attendance.isClockInLate ?? false,
-          );
-        }
-        if (attendance.clockOutTime != null) {
-          await prefs.setString(
-            'today_clock_out_time',
-            attendance.clockOutTime!,
-          );
-        }
-        if (attendance.workDuration != null) {
-          await prefs.setString(
-            'today_work_duration',
-            attendance.workDuration!,
-          );
-        }
-      }
-    } catch (e) {
-      if (kDebugMode) {
-        print('❌ Error saving attendance status: $e');
-      }
-    }
-  }
-
-  Future<void> _requestLocationPermission() async {
-    try {
-      LocationPermission permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied) {
-          throw Exception('Location permissions are denied');
-        }
-      }
-
-      if (permission == LocationPermission.deniedForever) {
-        throw Exception('Location permissions are permanently denied');
-      }
-
-      final bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) {
-        throw Exception('Location services are disabled');
-      }
-
-      if (kDebugMode) {
-        print('✅ Location permission granted');
-      }
-    } catch (e) {
-      if (kDebugMode) {
-        print('❌ Location permission error: $e');
-      }
-      rethrow;
-    }
-  }
-
+  /// Get current location using location service
   Future<void> _getCurrentLocation() async {
     try {
-      const LocationSettings locationSettings = LocationSettings(
-        accuracy: LocationAccuracy.high,
-        distanceFilter: 10,
-        timeLimit: Duration(seconds: 30),
-      );
-
-      final Position position =
-          await Geolocator.getCurrentPosition(
-            locationSettings: locationSettings,
-          ).timeout(
-            const Duration(seconds: 15),
-            onTimeout: () async {
-              if (kDebugMode) {
-                print('⏰ Location timeout, trying last known position...');
-              }
-              final lastPosition = await Geolocator.getLastKnownPosition();
-              if (lastPosition != null) {
-                return lastPosition;
-              }
-              throw Exception('Location timeout and no last known position');
-            },
-          );
-
+      final position = await _locationService.getCurrentPosition();
       _currentPosition.value = position;
 
       if (kDebugMode) {
@@ -543,6 +173,7 @@ class AttendanceController extends GetxController {
     }
   }
 
+  /// Get current address from coordinates
   Future<void> _getCurrentAddress() async {
     if (_currentPosition.value == null) {
       _currentAddress.value = 'Location not available';
@@ -586,49 +217,28 @@ class AttendanceController extends GetxController {
     }
   }
 
+  /// Get office location from server
   Future<void> _getOfficeLocation() async {
     try {
-      final requestData = {
-        'latitude': _currentPosition.value?.latitude ?? -6.2,
-        'longitude': _currentPosition.value?.longitude ?? 106.816666,
-      };
+      final officeLocation = await _attendanceService.getOfficeLocation(
+        userLatitude: _currentPosition.value?.latitude ?? -6.2,
+        userLongitude: _currentPosition.value?.longitude ?? 106.816666,
+      );
 
-      if (kDebugMode) {
-        print('📤 Office location request: $requestData');
-      }
-
-      final response = await _apiProvider
-          .post<Map<String, dynamic>>('/office/location', data: requestData)
-          .timeout(const Duration(seconds: 15));
-
-      if (response.success && response.data != null) {
-        _officeLocation.value = OfficeLocation.fromJson(response.data!);
-
-        if (kDebugMode) {
-          print(
-            '🏢 Office location loaded: ${_officeLocation.value!.latitude}, ${_officeLocation.value!.longitude}',
-          );
-          print('📏 Allowed radius: ${_officeLocation.value!.allowedRadius}m');
-        }
-      } else {
-        throw Exception(response.message);
-      }
+      _officeLocation.value = officeLocation;
     } catch (e) {
       if (kDebugMode) {
         print('❌ Get office location error: $e');
       }
       // Use default location instead of throwing
-      _officeLocation.value = OfficeLocation(
-        latitude: -6.2,
-        longitude: 106.816666,
-        allowedRadius: 100.0,
-      );
+      _officeLocation.value = OfficeLocation.defaultLocation;
       if (kDebugMode) {
         print('🏢 Using default office location');
       }
     }
   }
 
+  /// Calculate distance to office
   void _calculateDistance() {
     if (_currentPosition.value == null || _officeLocation.value == null) {
       _distance.value = double.infinity;
@@ -636,7 +246,7 @@ class AttendanceController extends GetxController {
     }
 
     try {
-      final double distanceInMeters = Geolocator.distanceBetween(
+      final double distanceInMeters = _locationService.calculateDistance(
         _currentPosition.value!.latitude,
         _currentPosition.value!.longitude,
         _officeLocation.value!.latitude,
@@ -657,7 +267,55 @@ class AttendanceController extends GetxController {
     }
   }
 
-  // FIXED: Clock In with server status update
+  /// Get attendance status from server
+  Future<void> _getAttendanceStatus() async {
+    try {
+      final statusResponse = await _attendanceService.getAttendanceStatus();
+
+      // Update server capabilities
+      _canClockInFromServer.value = statusResponse.canClockIn;
+      _canClockOutFromServer.value = statusResponse.canClockOut;
+      _isWorkingDay.value = statusResponse.isWorkingDay;
+
+      if (statusResponse.isWorkingDay) {
+        // Update today's attendance data
+        if (statusResponse.todayAttendance != null) {
+          _todayAttendance.value = statusResponse.todayAttendance;
+
+          // Determine attendance status based on server data
+          if (statusResponse.todayAttendance!.clockOutTime != null) {
+            _attendanceStatus.value = AttendanceStatus.completed;
+          } else if (statusResponse.todayAttendance!.clockInTime != null) {
+            _attendanceStatus.value = AttendanceStatus.clockedIn;
+          } else {
+            _attendanceStatus.value = AttendanceStatus.notStarted;
+          }
+        } else {
+          // No attendance data for today
+          _attendanceStatus.value = AttendanceStatus.notStarted;
+          _todayAttendance.value = null;
+        }
+      } else {
+        _attendanceStatus.value = AttendanceStatus.notStarted;
+        _todayAttendance.value = null;
+      }
+
+      if (kDebugMode) {
+        print('✅ Attendance status loaded from server');
+        print('Working day: ${_isWorkingDay.value}');
+        print('Can clock in: ${_canClockInFromServer.value}');
+        print('Can clock out: ${_canClockOutFromServer.value}');
+        print('Current status: ${_attendanceStatus.value}');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Get attendance status error: $e');
+      }
+      rethrow;
+    }
+  }
+
+  /// Clock in attendance
   Future<void> clockIn() async {
     if (_isLoading.value) {
       if (kDebugMode) {
@@ -674,49 +332,29 @@ class AttendanceController extends GetxController {
       await _getCurrentAddress();
       _calculateDistance();
 
-      final requestData = {
-        'latitude': _currentPosition.value!.latitude,
-        'longitude': _currentPosition.value!.longitude,
-        'location_address': _currentAddress.value,
-        'action': 'clock_in',
-      };
+      final attendance = await _attendanceService.clockIn(
+        latitude: _currentPosition.value!.latitude,
+        longitude: _currentPosition.value!.longitude,
+        locationAddress: _currentAddress.value,
+      );
+
+      // Update state
+      _todayAttendance.value = attendance;
+      _attendanceStatus.value = AttendanceStatus.clockedIn;
+      _canClockInFromServer.value = false;
+      _canClockOutFromServer.value = true;
+
+      Get.snackbar(
+        'Clock In Successful',
+        'You have successfully clocked in',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: const Color(0xFF10B981),
+        colorText: Colors.white,
+        duration: const Duration(seconds: 3),
+      );
 
       if (kDebugMode) {
-        print('📤 Clock in request: $requestData');
-      }
-
-      final response = await _apiProvider
-          .post<Map<String, dynamic>>('/attendance/clock', data: requestData)
-          .timeout(const Duration(seconds: 30));
-
-      if (response.success && response.data != null) {
-        // Update today's attendance
-        _todayAttendance.value = TodayAttendance.fromClockInResponse(
-          response.data!,
-        );
-
-        // Update attendance status and server capabilities
-        _attendanceStatus.value = AttendanceStatus.clockedIn;
-        _canClockInFromServer.value = false;
-        _canClockOutFromServer.value = true;
-
-        // Save to storage
-        await _saveAttendanceStatus();
-
-        Get.snackbar(
-          'Clock In Successful',
-          response.message,
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: const Color(0xFF10B981),
-          colorText: Colors.white,
-          duration: const Duration(seconds: 3),
-        );
-
-        if (kDebugMode) {
-          print('✅ Clock in successful');
-        }
-      } else {
-        throw Exception(response.message);
+        print('✅ Clock in successful');
       }
     } catch (e) {
       _handleClockError(e, isClockIn: true);
@@ -725,7 +363,16 @@ class AttendanceController extends GetxController {
     }
   }
 
-  // FIXED: Clock Out with server status update
+  @override
+  void onClose() {
+    if (kDebugMode) {
+      print('🔚 AttendanceController onClose called');
+    }
+    _attendanceRecords.clear();
+    super.onClose();
+  }
+
+  /// Clock out attendance
   Future<void> clockOut() async {
     if (_isLoading.value) {
       if (kDebugMode) {
@@ -742,50 +389,30 @@ class AttendanceController extends GetxController {
       await _getCurrentAddress();
       _calculateDistance();
 
-      final requestData = {
-        'latitude': _currentPosition.value!.latitude,
-        'longitude': _currentPosition.value!.longitude,
-        'location_address': _currentAddress.value,
-        'action': 'clock_out',
-      };
+      final attendance = await _attendanceService.clockOut(
+        latitude: _currentPosition.value!.latitude,
+        longitude: _currentPosition.value!.longitude,
+        locationAddress: _currentAddress.value,
+        previousAttendance: _todayAttendance.value,
+      );
+
+      // Update state
+      _todayAttendance.value = attendance;
+      _attendanceStatus.value = AttendanceStatus.completed;
+      _canClockInFromServer.value = false;
+      _canClockOutFromServer.value = false;
+
+      Get.snackbar(
+        'Clock Out Successful',
+        'You have successfully clocked out',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: const Color(0xFF10B981),
+        colorText: Colors.white,
+        duration: const Duration(seconds: 3),
+      );
 
       if (kDebugMode) {
-        print('📤 Clock out request: $requestData');
-      }
-
-      final response = await _apiProvider
-          .post<Map<String, dynamic>>('/attendance/clock', data: requestData)
-          .timeout(const Duration(seconds: 30));
-
-      if (response.success && response.data != null) {
-        // Update today's attendance
-        _todayAttendance.value = TodayAttendance.fromClockOutResponse(
-          response.data!,
-          _todayAttendance.value,
-        );
-
-        // Update attendance status and server capabilities
-        _attendanceStatus.value = AttendanceStatus.completed;
-        _canClockInFromServer.value = false;
-        _canClockOutFromServer.value = false;
-
-        // Save to storage
-        await _saveAttendanceStatus();
-
-        Get.snackbar(
-          'Clock Out Successful',
-          response.message,
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: const Color(0xFF10B981),
-          colorText: Colors.white,
-          duration: const Duration(seconds: 3),
-        );
-
-        if (kDebugMode) {
-          print('✅ Clock out successful');
-        }
-      } else {
-        throw Exception(response.message);
+        print('✅ Clock out successful');
       }
     } catch (e) {
       _handleClockError(e, isClockIn: false);
@@ -794,6 +421,7 @@ class AttendanceController extends GetxController {
     }
   }
 
+  /// Handle clock errors
   void _handleClockError(dynamic e, {required bool isClockIn}) {
     if (kDebugMode) {
       print('❌ ${isClockIn ? 'Clock in' : 'Clock out'} error: $e');
@@ -842,6 +470,7 @@ class AttendanceController extends GetxController {
     }
   }
 
+  /// Show outside radius dialog
   void _showOutsideRadiusDialog({required bool isClockIn}) {
     Get.dialog(
       AlertDialog(
@@ -900,7 +529,7 @@ class AttendanceController extends GetxController {
     );
   }
 
-  // UPDATED: Refresh with server status sync
+  /// Refresh location and office data
   Future<void> refreshLocation() async {
     if (_isLoading.value) {
       if (kDebugMode) {
@@ -941,6 +570,7 @@ class AttendanceController extends GetxController {
     }
   }
 
+  /// Retry initialization
   Future<void> retry() async {
     if (_isInitializing.value) {
       if (kDebugMode) {
@@ -953,7 +583,7 @@ class AttendanceController extends GetxController {
     await _initializeAttendance();
   }
 
-  // NEW: Manual refresh attendance status from server
+  /// Manual refresh attendance status from server
   Future<void> refreshAttendanceStatus() async {
     if (_isLoading.value) return;
 
@@ -981,41 +611,5 @@ class AttendanceController extends GetxController {
     } finally {
       _isLoading.value = false;
     }
-  }
-}
-
-// Model untuk Attendance Record (unchanged)
-class AttendanceRecord {
-  final int id;
-  final String type;
-  final DateTime timestamp;
-  final double latitude;
-  final double longitude;
-  final String address;
-  final bool isLate;
-  final String status;
-
-  AttendanceRecord({
-    required this.id,
-    required this.type,
-    required this.timestamp,
-    required this.latitude,
-    required this.longitude,
-    required this.address,
-    required this.isLate,
-    required this.status,
-  });
-
-  factory AttendanceRecord.fromJson(Map<String, dynamic> json) {
-    return AttendanceRecord(
-      id: json['attendance_id'] ?? 0,
-      type: json['action'] ?? 'clock_in',
-      timestamp: DateTime.now(),
-      latitude: 0.0,
-      longitude: 0.0,
-      address: json['location'] ?? '',
-      isLate: json['is_late'] ?? false,
-      status: json['status'] ?? '',
-    );
   }
 }
